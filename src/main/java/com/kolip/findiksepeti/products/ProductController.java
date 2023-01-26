@@ -1,11 +1,6 @@
 package com.kolip.findiksepeti.products;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.security.Principal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ProductController {
@@ -15,5 +10,11 @@ public class ProductController {
     public Product getProduct() {
 
         return new Product("findik", 11);
+    }
+
+    @PostMapping("/products")
+    @ResponseBody
+    public Product createProduct(@RequestBody Product product) {
+        return product;
     }
 }
