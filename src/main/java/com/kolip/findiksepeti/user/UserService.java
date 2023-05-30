@@ -2,5 +2,13 @@ package com.kolip.findiksepeti.user;
 
 public interface UserService {
 
-    public CustomUser createUser(UserDto userDto);
+    CustomUser createUser(UserDto userDto);
+
+    CustomUser getCurrentUser();
+
+    CustomUser getUser(String username);
+
+    CustomUser updateUser(UserDto userDto);
+
+    boolean deleteUser(String username);
 }

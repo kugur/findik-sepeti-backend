@@ -1,5 +1,7 @@
 package com.kolip.findiksepeti.security;
 
+import com.kolip.findiksepeti.user.CustomOAuth2ResultConverter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -10,14 +12,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -26,9 +25,26 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity()
 public class SecurityConfig {
     Logger logger = LoggerFactory.getLogger(SecurityConfig.class.getName());
+
+    private CustomUserDetailsService customUserDetailsService;
+    private CustomOAuth2ResultConverter oAuth2ResultConverter;
+//    private OpenIdRoleMapper openIdRoleMapper;
+
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService,
+                          CustomOAuth2ResultConverter oAuth2ResultConverter) {
+        this.customUserDetailsService = customUserDetailsService;
+        this.oAuth2ResultConverter = oAuth2ResultConverter;
+//        this.openIdRoleMapper = openIdRoleMapper;
+    }
+//
+//    @Bean
+//    public OpenIdRoleMapper getOpenIdRoleMapper(UserService userService) {
+//        OpenIdRoleMapper openIdRoleMapper = new OpenIdRoleMapper(userService);
+//        return openIdRoleMapper;
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -37,7 +53,10 @@ public class SecurityConfig {
 //                .csrf(csrfConfig -> csrfConfig.ignoringRequestMatchers("/users"));
 
 //        http.securityMatcher("/products");
-        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers("/admin").hasRole("ADMIN"));
+        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers("/admin").hasRole("ADMIN"))
+                .authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.PUT, "/users")
+                        .hasAnyRole("USER", "PRE_USER"));
+        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/products").permitAll());
         http.authorizeHttpRequests(requestMatcherReq -> requestMatcherReq.requestMatchers(HttpMethod.POST, "/users")
                         .permitAll())
                 .authorizeHttpRequests(requestMatchReq -> requestMatchReq.requestMatchers("/v1/csrf").permitAll())
@@ -45,7 +64,7 @@ public class SecurityConfig {
                         .authenticated()).requestCache(RequestCacheConfigurer::disable)
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(sessionManagementConfig -> sessionManagementConfig.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .userDetailsService(new CustomUserDetailsService())
+                .userDetailsService(customUserDetailsService)
 //                .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.OPTIONS).permitAll())
 //                        .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
                 .cors(Customizer.withDefaults())
@@ -60,112 +79,42 @@ public class SecurityConfig {
                             logger.info("on success handler on oauth2Login :: " + authentication.toString());
                             RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
                             redirectStrategy.sendRedirect(request, response, "http://localhost:3000/");
-                        })
-                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig.userAuthoritiesMapper(new OpenIdRoleMapper())))
+                        }))
 
-                .exceptionHandling().authenticationEntryPoint(new Http403ForbiddenEntryPoint());
-        return http.build();
+//                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
+//                                .userAuthoritiesMapper(openIdRoleMapper)))
+                .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(new Http403ForbiddenEntryPoint()))
+                .logout(logoutConfigurer -> {
+                    logoutConfigurer.logoutSuccessHandler(((request, response, authentication) -> {
+                        //TODO(ugur) no need to redirect
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    }));
+                });
 
+        SecurityFilterChain securityFilterChain = http.build();
+
+        setOauth2LoginAuthenticationResultConverter(securityFilterChain);
+        return securityFilterChain;
     }
 
-
-    private UserDetailsService customUserDetailsService() {
-// The builder will ensure the passwords are encoded before saving in memory
-        UserDetails user = User.builder()
-                .username("user")
-                .password("{noop}password")
-                .roles("USER")
-                .build();
-        UserDetails admin = User.builder()
-                .username("ugur.kolip@gmail.com")
-                .password("{noop}password")
-                .roles("USER", "ADMIN")
-                .build();
-
-        return null;
+    private void setOauth2LoginAuthenticationResultConverter(SecurityFilterChain securityFilterChain) {
+        securityFilterChain.getFilters().forEach(filter -> {
+            if (filter instanceof OAuth2LoginAuthenticationFilter) {
+                ((OAuth2LoginAuthenticationFilter) filter).setAuthenticationResultConverter(oAuth2ResultConverter);
+                return;
+            }
+        });
     }
-//
-//    private GrantedAuthoritiesMapper userAuthoritiesMapper() {
-//        return (authorities) -> {
-//            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-//
-//            authorities.forEach(authority -> {
-//                if (OidcUserAuthority.class.isInstance(authority)) {
-//                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-//
-//                    OidcIdToken idToken = oidcUserAuthority.getIdToken();
-//                    OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
-//
-//
-//                    // Map the claims found in idToken and/or userInfo
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
-//                    OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
-//
-//                    Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
-//
-//                    // Map the attributes found in userAttributes
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                }
-//            });
-//
-//            return mappedAuthorities;
-//        };
-//    }
-//    private GrantedAuthoritiesMapper userAuthoritiesMapper() {
-//        return (authorities) -> {
-//            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-//
-//            authorities.forEach(authority -> {
-//                if (OidcUserAuthority.class.isInstance(authority)) {
-//                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-//
-//                    OidcIdToken idToken = oidcUserAuthority.getIdToken();
-//                    OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
-//
-//
-//                    // Map the claims found in idToken and/or userInfo
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
-//                    OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
-//
-//                    Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
-//
-//                    // Map the attributes found in userAttributes
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                }
-//            });
-//
-//            return mappedAuthorities;
-//        };
-//    }
-
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        UserDetails user = User.withDefaultPasswordEncoder()
-//                .username("user")
-//                .password("password")
-//                .roles("USER")
-//                .build();
-//        return new InMemoryUserDetailsManager(user);
-//    }
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8080"));
-        configuration.setAllowedMethods(Arrays.asList("OPTIONS", "GET", "POST", "DELETE"));
+        configuration.setAllowedMethods(Arrays.asList("OPTIONS", "GET", "POST", "DELETE", "PUT"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         configuration.setAllowCredentials(true);
         return source;
     }
-
-
 }

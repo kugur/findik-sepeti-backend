@@ -1,15 +1,36 @@
 package com.kolip.findiksepeti.products;
 
+import com.kolip.findiksepeti.filters.FilterConverter;
+import com.kolip.findiksepeti.pagination.PageRequestConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ProductController {
 
-    @GetMapping("/products")
-//    @CrossOrigin(origins = "http://localhost:3000")
-    public Product getProduct() {
+    private final Logger logger = LoggerFactory.getLogger(ProductController.class);
+    private ProductService productService;
+    private FilterConverter filterConverter;
+    private PageRequestConverter pageRequestConverter;
 
-        return new Product("findik", 11);
+
+    public ProductController(ProductService productService, FilterConverter filterConverter,
+                             PageRequestConverter pageRequestConverter) {
+        this.productService = productService;
+        this.filterConverter = filterConverter;
+        this.pageRequestConverter = pageRequestConverter;
+    }
+
+    @GetMapping("/products")
+    public Page<Product> getProducts(@RequestParam(value = "filters", defaultValue = "") String filtersJson,
+                                     @RequestParam(value = "pageInfo", defaultValue = "{page=0,size=10, sort=ASC,id}")
+                                             String paginationJson) throws InterruptedException {
+        logger.info("PageRequest {}", paginationJson);
+        logger.info("Received filters {}", filtersJson);
+        return productService.getProducts(filterConverter.convert(filtersJson),
+                pageRequestConverter.convert(paginationJson));
     }
 
     @PostMapping("/products")
