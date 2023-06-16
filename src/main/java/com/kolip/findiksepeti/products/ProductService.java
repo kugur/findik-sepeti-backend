@@ -8,4 +8,8 @@ import java.util.List;
 
 public interface ProductService {
     Page<Product> getProducts(List<Filter> filters, PageRequest pageRequest);
+
+    Product getProduct(long id);
+
+    Product createProduct(ProductModel productModel);
 }

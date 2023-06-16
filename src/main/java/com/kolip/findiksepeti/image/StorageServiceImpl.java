@@ -1,5 +1,7 @@
 package com.kolip.findiksepeti.image;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -7,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -17,6 +18,7 @@ import java.util.Date;
 @Service
 public class StorageServiceImpl implements StorageService {
 
+    private Logger logger = LoggerFactory.getLogger(StorageServiceImpl.class);
     private final String fileStorageLocationUrl;
     private final ResourceLoader resourceLoader;
 
@@ -26,8 +28,16 @@ public class StorageServiceImpl implements StorageService {
         this.fileStorageLocationUrl = fileStorageLocationUrl;
     }
 
+    /**
+     * @param file that will be stored.
+     * @return file name if it will be stored successfully.
+     * If File is null or failed to store, it will return null
+     */
     @Override
     public String storeFile(MultipartFile file) {
+        //Null control
+        if (file == null) return null;
+
         // Generate a unique file name to avoid conflicts
         String fileName = StringUtils.cleanPath(file.getName());
         String uniqueFileName = createUniqueValue(fileName);
@@ -38,8 +48,9 @@ public class StorageServiceImpl implements StorageService {
         // Copy the file to the storage location
         try {
             Files.copy(file.getInputStream(), destination.getFile().toPath().resolve(uniqueFileName),
-                    StandardCopyOption.REPLACE_EXISTING);
+                       StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
+            logger.error("Exception occurred while storing file, e: {}", e.getMessage());
             return null;
         }
 
@@ -48,7 +59,12 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public byte[] readFile(String url) {
-        return null;
+        Resource resource = resourceLoader.getResource(fileStorageLocationUrl);
+        try {
+            return Files.readAllBytes(resource.getFile().toPath().resolve(url));
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     /**

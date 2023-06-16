@@ -5,6 +5,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+
 @Entity
 public class Product {
     @Id
@@ -12,7 +15,7 @@ public class Product {
     private Long id;
 
     private String name;
-    private int price;
+    private BigDecimal price;
     private String imageUrl;
     private String category;
 
@@ -20,10 +23,14 @@ public class Product {
     }
 
     public Product(String name, int price, String imageUrl) {
+        this(name, BigDecimal.valueOf(price), imageUrl, "");
+    }
+
+    public Product(String name, BigDecimal price, String imageUrl) {
         this(name, price, imageUrl, "");
     }
 
-    public Product(String name, int price, String imageUrl, String category) {
+    public Product(String name, BigDecimal price, String imageUrl, String category) {
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
@@ -46,11 +53,11 @@ public class Product {
         this.name = name;
     }
 
-    public int getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -62,13 +69,32 @@ public class Product {
         this.imageUrl = imageUrl;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     @Override
     public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", price=" + price +
-                ", imageUrl='" + imageUrl + '\'' +
-                '}';
+        return "Product{" + "id=" + id + ", name='" + name + '\'' + ", price=" + price + ", imageUrl='" + imageUrl +
+                '\'' + ", category='" + category + '\'' + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product product)) return false;
+        return Objects.equals(getId(), product.getId()) && Objects.equals(getName(), product.getName()) &&
+                Objects.equals(getPrice(), product.getPrice()) &&
+                Objects.equals(getImageUrl(), product.getImageUrl()) &&
+                Objects.equals(getCategory(), product.getCategory());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getName(), getPrice(), getImageUrl(), getCategory());
     }
 }

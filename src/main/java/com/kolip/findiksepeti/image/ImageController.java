@@ -7,8 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 @RestController
 public class ImageController {
     private StorageService storageService;
@@ -32,14 +30,13 @@ public class ImageController {
         }
     }
 
-    @GetMapping(
-            value = "/get-image-with-media-type",
-            produces = MediaType.IMAGE_PNG_VALUE
-    )
-    public @ResponseBody
-    byte[] getImageWithMediaType(@PathVariable String path) throws IOException {
-        return null;
+    @GetMapping(value = "/images/{path}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public @ResponseBody ResponseEntity<byte[]> getImageWithMediaType(@PathVariable(name = "path") String path) {
+        byte[] imageFile = storageService.readFile(path);
+        if (imageFile == null) {
+            return ResponseEntity.status(HttpStatusCode.valueOf(404)).build();
+        } else {
+            return ResponseEntity.status(HttpStatusCode.valueOf(200)).body(imageFile);
+        }
     }
-
-
 }

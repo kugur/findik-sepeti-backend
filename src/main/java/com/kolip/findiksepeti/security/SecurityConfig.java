@@ -60,6 +60,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(requestMatcherReq -> requestMatcherReq.requestMatchers(HttpMethod.POST, "/users")
                         .permitAll())
                 .authorizeHttpRequests(requestMatchReq -> requestMatchReq.requestMatchers("/v1/csrf").permitAll())
+                .authorizeHttpRequests(requestMatchReq -> requestMatchReq.requestMatchers("/images/**").permitAll())
                 .authorizeHttpRequests(authorizeReq -> authorizeReq.anyRequest()
                         .authenticated()).requestCache(RequestCacheConfigurer::disable)
                 .httpBasic(Customizer.withDefaults())
