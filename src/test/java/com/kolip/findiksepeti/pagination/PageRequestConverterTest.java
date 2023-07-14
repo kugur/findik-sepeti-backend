@@ -30,7 +30,7 @@ class PageRequestConverterTest {
         assertNotNull(pageRequest);
         assertEquals(pageRequest.getPageNumber(), 0, "If request param page info empty, pageNumber should return 0");
         assertEquals(pageRequest.getPageSize(), 10, "If requestParam pageInfo is empty, it should return 10 for pageSize");
-        assertEquals(Sort.unsorted(), pageRequest.getSort());
+        assertEquals(Sort.by(Sort.Direction.ASC, "Id"), pageRequest.getSort());
     }
 
     @Test
@@ -58,9 +58,9 @@ class PageRequestConverterTest {
 
         //Verify
         assertNotNull(pageRequest);
-        assertEquals(pageRequest.getPageNumber(), 0, "If request param page info empty, pageNumber should return 0");
-        assertEquals(pageRequest.getPageSize(), 10, "If requestParam pageInfo is empty, it should return 10 for pageSize");
-        assertEquals(pageRequest.getSort(), Sort.unsorted());
+        assertEquals(0, pageRequest.getPageNumber(), "If request param page info empty, pageNumber should return 0");
+        assertEquals(10, pageRequest.getPageSize(), "If requestParam pageInfo is empty, it should return 10 for pageSize");
+        assertEquals(Sort.by(Sort.Direction.ASC, "Id"), pageRequest.getSort());
     }
 
 
@@ -74,8 +74,8 @@ class PageRequestConverterTest {
 
         //Verify
         assertNotNull(pageRequest);
-        assertEquals(pageRequest.getPageNumber(), 1);
-        assertEquals(pageRequest.getPageSize(), 5);
-        assertEquals(pageRequest.getSort(), Sort.unsorted());
+        assertEquals(1, pageRequest.getPageNumber());
+        assertEquals(5, pageRequest.getPageSize());
+        assertEquals(Sort.by(Sort.Direction.ASC, "Id"), pageRequest.getSort());
     }
 }

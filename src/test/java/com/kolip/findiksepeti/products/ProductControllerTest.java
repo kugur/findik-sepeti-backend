@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,7 +28,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -217,15 +218,16 @@ class ProductControllerTest {
     public void createProduct_WithValidValues_ShouldReturnResult() throws Exception {
         MockMultipartFile file =
                 new MockMultipartFile("imageFile", "test.png", MediaType.IMAGE_JPEG_VALUE, "Image File!".getBytes());
-        Product product = new Product("test", BigDecimal.valueOf(111L), "", "raw");
-        ProductModel productModel =
-                new ProductModel(product.getName(), product.getPrice(), "test.png", product.getCategory(), file);
+        SimpleInput simpleInput = createSimpleInput();
+        Product product = simpleInput.product;
+        ProductModel productModel = simpleInput.productModel;
 
         //Initialize
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("name", product.getName());
         formData.add("price", product.getPrice().toPlainString());
         formData.add("category", product.getCategory());
+        formData.add("description", product.getDescription());
 
         when(productService.createProduct(argThat(receivedProduct -> receivedProduct.getImageFile() != null &&
                 productModel.getName().equals(receivedProduct.getName())))).thenReturn(product);
@@ -233,5 +235,61 @@ class ProductControllerTest {
         // Run Test
         mockMvc.perform(MockMvcRequestBuilders.multipart("/products").file(file).params(formData))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.price").value(productModel.getPrice()));
+    }
+
+    @Test
+    public void updateProduct_WithValidValues_ShouldReturnResult() throws Exception {
+        //Initialize
+        SimpleInput simpleInput = createSimpleInput();
+        when(productService.update(eq(simpleInput.productModel))).thenReturn(simpleInput.product);
+
+        //Run test
+        mockMvc.perform(multipart(HttpMethod.PUT, "/products", simpleInput.formData).file(simpleInput.file))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteProduct_WithValidId_ShouldReturnResult() throws Exception {
+        //Initialize
+        Long productId = 12L;
+        when(productService.delete(any())).thenReturn(true);
+
+        //Run Test
+        mockMvc.perform(delete("/products/" + productId)).andExpect(status().isOk());
+
+        //Verify Result
+        verify(productService, times(1)).delete(eq(productId));
+    }
+
+    private SimpleInput createSimpleInput() {
+        MockMultipartFile file =
+                new MockMultipartFile("imageFile", "test.png", MediaType.IMAGE_JPEG_VALUE, "Image File!".getBytes());
+        Product product = new Product("test", BigDecimal.valueOf(111L), "test.png", "raw", "description area");
+        ProductModel productModel =
+                new ProductModel(product.getName(), product.getPrice(), product.getImageUrl(), product.getCategory(),
+                                 file, product.getDescription());
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("name", product.getName());
+        formData.add("price", product.getPrice().toPlainString());
+        formData.add("category", product.getCategory());
+
+        return new SimpleInput(productModel, product, file, formData);
+    }
+
+    private class SimpleInput {
+        public ProductModel productModel;
+        public Product product;
+        public MockMultipartFile file;
+        public MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+
+        public SimpleInput(ProductModel productModel, Product product, MockMultipartFile file,
+                           MultiValueMap<String, String> formData) {
+            this.productModel = productModel;
+            this.product = product;
+            this.file = file;
+            this.formData = formData;
+        }
+
     }
 }

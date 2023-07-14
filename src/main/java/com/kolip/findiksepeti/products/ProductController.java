@@ -47,4 +47,14 @@ public class ProductController {
     public Product createProduct(@ModelAttribute ProductModel product) {
         return productService.createProduct(product);
     }
+
+    @PutMapping("/products")
+    public Product updateProduct(@ModelAttribute ProductModel productModel) {
+        return productService.update(productModel);
+    }
+
+    @DeleteMapping("/products/{productId}")
+    public boolean deleteProduct(@PathVariable("productId") Long productId) {
+        return productService.delete(productId);
+    }
 }

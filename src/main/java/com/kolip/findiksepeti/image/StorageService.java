@@ -20,4 +20,11 @@ public interface StorageService {
      * @return the file that be read.
      */
     byte[] readFile(String url);
+
+    /**
+     *
+     * @param url that will be removed.
+     * @return true if the image be deleted successfully, or return false.
+     */
+    boolean delete(String url);
 }

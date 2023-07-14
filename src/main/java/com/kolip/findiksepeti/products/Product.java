@@ -1,13 +1,14 @@
 package com.kolip.findiksepeti.products;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * Creted by ugur.kolip on 10/07/2023.
+ * Product entity consist of product values.
+ */
 @Entity
 public class Product {
     @Id
@@ -15,26 +16,30 @@ public class Product {
     private Long id;
 
     private String name;
-    private BigDecimal price;
+    @Column(precision = 10, scale = 2, nullable = true)
+    private BigDecimal price = BigDecimal.ZERO;
     private String imageUrl;
     private String category;
+    @Column(length = 2048)
+    private String description;
 
     public Product() {
     }
 
     public Product(String name, int price, String imageUrl) {
-        this(name, BigDecimal.valueOf(price), imageUrl, "");
+        this(name, BigDecimal.valueOf(price), imageUrl, "", "");
     }
 
     public Product(String name, BigDecimal price, String imageUrl) {
-        this(name, price, imageUrl, "");
+        this(name, price, imageUrl, "", "");
     }
 
-    public Product(String name, BigDecimal price, String imageUrl, String category) {
+    public Product(String name, BigDecimal price, String imageUrl, String category, String description) {
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
         this.category = category;
+        this.description = description;
     }
 
     public Long getId() {
@@ -96,5 +101,13 @@ public class Product {
     @Override
     public int hashCode() {
         return Objects.hash(getId(), getName(), getPrice(), getImageUrl(), getCategory());
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

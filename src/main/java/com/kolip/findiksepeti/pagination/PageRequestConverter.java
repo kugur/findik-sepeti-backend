@@ -18,7 +18,7 @@ public class PageRequestConverter {
     private ObjectMapper mapper;
     private int defaultPage = 0;
     private int defaultPageSize = 10;
-    private Sort defaultSort = Sort.by(Sort.Direction.ASC, "Id");
+    private final Sort defaultSort = Sort.by(Sort.Direction.ASC, "Id");
 
     public PageRequestConverter() {
         mapper = new ObjectMapper();

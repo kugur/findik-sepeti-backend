@@ -1,4 +1,4 @@
-package com.kolip.findiksepeti.user;
+package com.kolip.findiksepeti.exceptions;
 
 /**
  * Created by ugur.kolip on 19.02.2022

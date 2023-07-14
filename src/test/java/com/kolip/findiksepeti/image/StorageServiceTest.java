@@ -35,7 +35,6 @@ class StorageServiceTest {
         String storedFileName = "testFile.txt"; // Expected stored file name
         MockMultipartFile mockFile = new MockMultipartFile(storedFileName, "This is a test file".getBytes());
 
-
         Resource destinationResource = resourceLoader.getResource(storageLocation);
 
         // Invoke the method under test
@@ -44,7 +43,7 @@ class StorageServiceTest {
         // Verify the result
         assertNotNull(result, "Stored file name should not be null");
         assertTrue(result.endsWith(storedFileName),
-                   "Stored file name should end textFile.txt but result " + storedFileName);
+                   "Stored file name should end textFile.txt but result " + result);
 
         // Verify that the file is stored in the correct location
         Path storedFilePath = destinationResource.getFile().toPath().resolve(result);
@@ -105,5 +104,51 @@ class StorageServiceTest {
 
         //Clean
         Files.delete(destinationResource.getFile().toPath().resolve(existFilename));
+    }
+
+    @Test
+    public void deleteFile_WithValidUrl_ShouldDeleteTheFile() throws Exception {
+        //Initialize Test
+        String fileName = "toBeDeletedFileName.png";
+        byte[] fileData = "to be deleted file data".getBytes();
+        Resource destinationResource = resourceLoader.getResource(storageLocation);
+        Files.write(destinationResource.getFile().toPath().resolve(fileName), fileData, StandardOpenOption.CREATE);
+
+        //Run Test
+        boolean result = storageService.delete(fileName);
+
+        //Verify Result
+        assertTrue(result, "Should be delete the file and should return true");
+
+        boolean fileExist = Files.exists(destinationResource.getFile().toPath().resolve(fileName));
+        assertFalse(fileExist, "The file should be removed");
+
+        //Clean
+        if (fileExist) {
+            Files.delete(destinationResource.getFile().toPath().resolve(fileName));
+        }
+    }
+
+    @Test
+    public void deleteFile_WithUrlIsNull_ShouldReturnFalse() throws Exception {
+        //Initialize
+
+        //Run Test
+        boolean result = storageService.delete(null);
+
+        //Verify Result
+        assertFalse(result, "If url is null, should return null");
+    }
+
+    @Test
+    public void deleteFile_WithNotExistUrl_ShouldReturnFalse() {
+        //Initialize
+        String fileName = "notExistFile.png";
+
+        //Run Test
+        boolean result = storageService.delete(fileName);
+
+        //Verify Result
+        assertFalse(result, "If It could not find the file, should return false");
     }
 }
