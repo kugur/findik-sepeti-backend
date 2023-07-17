@@ -33,6 +33,12 @@ public class CategoryServiceImpl implements CategoryService {
         return true;
     }
 
+    @Override
+    public boolean deleteCategories(List<Long> anyList) {
+        //TODO(ugur) to be immplement
+        return false;
+    }
+
     private void setIdsNull(List<Category> categories) {
         categories.forEach(category -> {
             if (category != null && category.getId() != null) {

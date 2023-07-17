@@ -71,7 +71,7 @@ class CategoryServiceImplTest {
 
     @Test
     public void addCategories_WithNotNullIds_SetIdsNullAndReturnTrue() {
-        //Initiliaze
+        //Initialize
         List<Category> categories = createCategoryList();
         when(categoryRepository.saveAll(any())).thenReturn(categories);
 
@@ -82,7 +82,6 @@ class CategoryServiceImplTest {
         verify(categoryRepository).saveAll(anyList());
         verify(categoryRepository).saveAll(argThat(argument -> isAllIdsNull(argument.iterator())));
         assertTrue(result);
-
     }
 
     @Test

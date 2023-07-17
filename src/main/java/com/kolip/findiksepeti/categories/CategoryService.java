@@ -6,4 +6,6 @@ public interface CategoryService {
     List<Category> getCategories();
 
     boolean addCategories(List<Category> categories);
+
+    boolean deleteCategories(List<Long> anyList);
 }
