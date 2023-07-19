@@ -34,9 +34,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public boolean deleteCategories(List<Long> anyList) {
-        //TODO(ugur) to be immplement
-        return false;
+    public boolean deleteCategories(List<Long> ids) {
+        categoryRepository.deleteAllByIdInBatch(ids);
+        return true;
     }
 
     private void setIdsNull(List<Category> categories) {

@@ -1,9 +1,6 @@
 package com.kolip.findiksepeti.categories;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 /**
  * Created by ugur.kolip on 10/07/2023
@@ -25,6 +22,9 @@ public class Category {
     private Long id;
 
     private String name;
+
+    @OneToMany(mappedBy = "category")
+
 
 
     public Long getId() {

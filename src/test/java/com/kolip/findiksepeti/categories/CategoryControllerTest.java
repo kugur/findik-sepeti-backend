@@ -115,7 +115,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    public void deleteCategories_CouldNotDelete_ShouldReturnFalse() throws Exception {
+    public void deleteCategories_CouldNotDeleteSuccessfully_ShouldReturnFalse() throws Exception {
         //Initialize
         List<Long> ids = createIds();
         when(categoryService.deleteCategories(anyList())).thenReturn(false);

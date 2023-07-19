@@ -6,6 +6,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,6 +103,19 @@ class CategoryServiceImplTest {
         assertEquals(categories.size(), saveArgumentCaptor.getValue().size(), "null items should not be saved");
     }
 
+    @Test
+    public void deleteCategories_WithIds_ShouldCallRepositoryWithIds() {
+        //Initialize
+        List<Long> ids = createIds();
+
+        //Run Test
+        boolean result = instanceUnderTest.deleteCategories(ids);
+
+        //Verify Result
+        assertTrue(result);
+        verify(categoryRepository).deleteAllByIdInBatch(eq(ids));
+    }
+
     private boolean isAllIdsNull(Iterator<Category> categoryIterator) {
         boolean allIdsNull = true;
         while (categoryIterator.hasNext()) {
@@ -111,6 +125,14 @@ class CategoryServiceImplTest {
             }
         }
         return allIdsNull;
+    }
+
+    private List<Long> createIds() {
+        List<Long> ids = new ArrayList<>();
+        ids.add(1L);
+        ids.add(2L);
+        ids.add(3L);
+        return ids;
     }
 
     private List<Category> createCategoryList() {
