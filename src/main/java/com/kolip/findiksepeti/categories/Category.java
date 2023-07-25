@@ -1,6 +1,9 @@
 package com.kolip.findiksepeti.categories;
 
+import com.kolip.findiksepeti.products.Product;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 /**
  * Created by ugur.kolip on 10/07/2023
@@ -23,9 +26,8 @@ public class Category {
 
     private String name;
 
-    @OneToMany(mappedBy = "category")
-
-
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private List<Product> products;
 
     public Long getId() {
         return id;
@@ -41,6 +43,14 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
 
     @Override

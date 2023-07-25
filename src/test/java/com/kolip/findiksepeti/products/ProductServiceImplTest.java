@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.products;
 
+import com.kolip.findiksepeti.categories.Category;
 import com.kolip.findiksepeti.config.LibraryConfiguration;
 import com.kolip.findiksepeti.exceptions.InvalidArguments;
 import com.kolip.findiksepeti.exceptions.StorageException;
@@ -276,7 +277,7 @@ class ProductServiceImplTest {
     private SimpleInputs createSimpleInputs() {
         MockMultipartFile file =
                 new MockMultipartFile("imageFile", "test.png", MediaType.IMAGE_JPEG_VALUE, "Image File!".getBytes());
-        Product product = new Product("test", BigDecimal.valueOf(111L), "test.png", "raw", "description area");
+        Product product = new Product("test", BigDecimal.valueOf(111L), "test.png", new Category(1L, "raw"), "description area");
         ProductModel productModel =
                 new ProductModel(product.getName(), product.getPrice(), product.getImageUrl(), product.getCategory(),
                                  file, product.getDescription());

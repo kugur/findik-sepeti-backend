@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.products;
 
+import com.kolip.findiksepeti.categories.Category;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -19,7 +20,11 @@ public class Product {
     @Column(precision = 10, scale = 2, nullable = true)
     private BigDecimal price = BigDecimal.ZERO;
     private String imageUrl;
-    private String category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
     @Column(length = 2048)
     private String description;
 
@@ -27,14 +32,14 @@ public class Product {
     }
 
     public Product(String name, int price, String imageUrl) {
-        this(name, BigDecimal.valueOf(price), imageUrl, "", "");
+        this(name, BigDecimal.valueOf(price), imageUrl, new Category(1L, "unknown"), "");
     }
 
     public Product(String name, BigDecimal price, String imageUrl) {
-        this(name, price, imageUrl, "", "");
+        this(name, price, imageUrl, new Category(1L, "unknown"), "");
     }
 
-    public Product(String name, BigDecimal price, String imageUrl, String category, String description) {
+    public Product(String name, BigDecimal price, String imageUrl, Category category, String description) {
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
@@ -74,11 +79,11 @@ public class Product {
         this.imageUrl = imageUrl;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 

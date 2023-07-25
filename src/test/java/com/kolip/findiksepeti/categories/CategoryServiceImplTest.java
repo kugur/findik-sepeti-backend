@@ -1,15 +1,18 @@
 package com.kolip.findiksepeti.categories;
 
+import com.kolip.findiksepeti.common.DeleteResponse;
+import com.kolip.findiksepeti.common.Errors;
+import com.kolip.findiksepeti.common.UpdateResponse;
+import com.kolip.findiksepeti.products.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -106,14 +109,59 @@ class CategoryServiceImplTest {
     @Test
     public void deleteCategories_WithIds_ShouldCallRepositoryWithIds() {
         //Initialize
-        List<Long> ids = createIds();
+        List<Long> ids = createThreeIds();
 
         //Run Test
-        boolean result = instanceUnderTest.deleteCategories(ids);
+        DeleteResponse result = instanceUnderTest.deleteCategories(ids);
 
         //Verify Result
-        assertTrue(result);
-        verify(categoryRepository).deleteAllByIdInBatch(eq(ids));
+        assertTrue(result.isSuccessful());
+        verify(categoryRepository, times(3)).deleteById(anyLong());
+    }
+
+    @Test
+    public void deleteCategories_DeleteCategoriesUsedByProducts_ShouldNotDeleteCategories() {
+        //Initialize`
+        List<Long> ids = createThreeIds();
+        doThrow(new DataIntegrityViolationException("")).when(categoryRepository).deleteById(eq(ids.get(1)));
+
+        //Run Test
+        DeleteResponse deleteResponse = instanceUnderTest.deleteCategories(ids);
+
+        //Verify Result
+        assertEquals(1, deleteResponse.getCouldNotDeleteResults().size());
+        assertEquals(Errors.INVALID_ARGUMENT.description, deleteResponse.getCouldNotDeleteResults().get(ids.get(1)));
+        verify(categoryRepository, times(3)).deleteById(any());
+    }
+
+    @Test
+    public void update_WithValidValues_ShouldUpdateCategory() {
+        //Initialize
+        Category willBeUpdated = new Category(1L, "new Value");
+        when(categoryRepository.save(eq(willBeUpdated))).thenReturn(willBeUpdated);
+
+        //Run Test
+        UpdateResponse<Category> response = instanceUnderTest.update(willBeUpdated);
+
+        //Verify Result
+        verify(categoryRepository).save(willBeUpdated);
+        assertTrue(response.isSuccessful());
+        assertEquals(willBeUpdated, response.getUpdatedValue());
+    }
+
+    @Test
+    public void update_WithInvalidValue_ShouldReturnError() {
+        //Initialize
+        Category willBeUpdatedCategory = null;
+        when(categoryRepository.save(isNull())).thenThrow(IllegalArgumentException.class);
+
+        //Run Test
+        UpdateResponse<Category> response = instanceUnderTest.update(willBeUpdatedCategory);
+
+        //Verify Result
+        verify(categoryRepository).save(willBeUpdatedCategory);
+        assertFalse(response.isSuccessful());
+        assertEquals(Errors.INVALID_ARGUMENT.description, response.getErrorMessage());
     }
 
     private boolean isAllIdsNull(Iterator<Category> categoryIterator) {
@@ -127,7 +175,7 @@ class CategoryServiceImplTest {
         return allIdsNull;
     }
 
-    private List<Long> createIds() {
+    private List<Long> createThreeIds() {
         List<Long> ids = new ArrayList<>();
         ids.add(1L);
         ids.add(2L);
@@ -147,6 +195,11 @@ class CategoryServiceImplTest {
         categories.add(new Category(null, "raw"));
         categories.add(new Category(null, "processed"));
         return categories;
+    }
+
+    private Product createProduct(Category category) {
+        Product product = new Product("product1", BigDecimal.valueOf(11L), "imageUrl", category, "description");
+        return product;
     }
 
 }

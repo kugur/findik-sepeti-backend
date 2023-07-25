@@ -1,5 +1,8 @@
 package com.kolip.findiksepeti.products;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kolip.findiksepeti.categories.Category;
 import com.kolip.findiksepeti.filters.FilterConverter;
 import com.kolip.findiksepeti.filters.FilterOperations;
 import com.kolip.findiksepeti.pagination.PageRequestConverter;
@@ -36,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         //@AutoConfigureMockMvc
 class ProductControllerTest {
     private MockMvc mockMvc;
+    private ObjectMapper mapper = new ObjectMapper();
 
     @MockBean
     private ProductServiceImpl productService;
@@ -216,6 +220,7 @@ class ProductControllerTest {
 
     @Test
     public void createProduct_WithValidValues_ShouldReturnResult() throws Exception {
+        //Initialize
         MockMultipartFile file =
                 new MockMultipartFile("imageFile", "test.png", MediaType.IMAGE_JPEG_VALUE, "Image File!".getBytes());
         SimpleInput simpleInput = createSimpleInput();
@@ -226,7 +231,7 @@ class ProductControllerTest {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("name", product.getName());
         formData.add("price", product.getPrice().toPlainString());
-        formData.add("category", product.getCategory());
+        formData.add("categoryId", "" + product.getCategory().getId());
         formData.add("description", product.getDescription());
 
         when(productService.createProduct(argThat(receivedProduct -> receivedProduct.getImageFile() != null &&
@@ -261,10 +266,10 @@ class ProductControllerTest {
         verify(productService, times(1)).delete(eq(productId));
     }
 
-    private SimpleInput createSimpleInput() {
+    private SimpleInput createSimpleInput() throws JsonProcessingException {
         MockMultipartFile file =
                 new MockMultipartFile("imageFile", "test.png", MediaType.IMAGE_JPEG_VALUE, "Image File!".getBytes());
-        Product product = new Product("test", BigDecimal.valueOf(111L), "test.png", "raw", "description area");
+        Product product = new Product("test", BigDecimal.valueOf(111L), "test.png", new Category(1L, "raw"), "description area");
         ProductModel productModel =
                 new ProductModel(product.getName(), product.getPrice(), product.getImageUrl(), product.getCategory(),
                                  file, product.getDescription());
@@ -272,7 +277,7 @@ class ProductControllerTest {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("name", product.getName());
         formData.add("price", product.getPrice().toPlainString());
-        formData.add("category", product.getCategory());
+        formData.add("categoryId", "" + product.getCategory().getId());
 
         return new SimpleInput(productModel, product, file, formData);
     }

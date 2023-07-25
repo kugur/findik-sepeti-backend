@@ -2,6 +2,9 @@ package com.kolip.findiksepeti.categories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kolip.findiksepeti.common.DeleteResponse;
+import com.kolip.findiksepeti.common.Errors;
+import com.kolip.findiksepeti.common.UpdateResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,10 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -51,11 +51,10 @@ class CategoryControllerTest {
     }
 
     @Test
-    public void addCategories_WithNewCategories_ShouldReturnTrue() throws Exception {
+    public void addCategories_WithNewCategories_ShouldReturnOK() throws Exception {
         //Initialize
         List<Category> willBePersistedCategories = createCategoriesWithoutId();
         when(categoryService.addCategories(any())).thenReturn(true);
-        String requestedCategoriesJson = objectMapper.writeValueAsString(Arrays.asList(willBePersistedCategories));
 
         //Run test
         mockMvc.perform(post("/category").content(objectMapper.writeValueAsString(willBePersistedCategories))
@@ -66,10 +65,36 @@ class CategoryControllerTest {
     }
 
     @Test
+    public void updateCategory_WithNewName_ShouldReturnUpdatedCategory() throws Exception {
+        //Initialize
+        Category willBeUpdatedCategory = new Category(1L, "raw");
+        when(categoryService.update(eq(willBeUpdatedCategory))).thenReturn(new UpdateResponse<>(willBeUpdatedCategory));
+
+        //Run Test
+        mockMvc.perform(put("/category").content(objectMapper.writeValueAsString(willBeUpdatedCategory))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        //Verify Result
+        verify(categoryService).update(argThat(argument -> Objects.equals(argument.getId(),
+                willBeUpdatedCategory.getId())));
+    }
+
+    @Test
+    public void updateCategory_WithInvalidValue_ShouldReturnInvalidError() throws Exception {
+        //Initialize
+        String requestBody = "{asdf: asdf}";
+
+        //Run Test
+        mockMvc.perform(put("/category").contentType(requestBody).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void deleteCategories_WithIds_ShouldReturnTrue() throws Exception {
         //Initialize
         List<Long> willBeDeletedIds = createIds();
-        when(categoryService.deleteCategories(anyList())).thenReturn(true);
+        when(categoryService.deleteCategories(anyList())).thenReturn(new DeleteResponse());
 
         //Run Test
         mockMvc.perform(delete("/category")
@@ -88,7 +113,7 @@ class CategoryControllerTest {
     public void deleteCategories_WithoutIds_ShouldReturnTrue() throws Exception {
         //Initialize
         List<Long> willBeDeletedIds = new ArrayList<>();
-        when(categoryService.deleteCategories(anyList())).thenReturn(true);
+        when(categoryService.deleteCategories(anyList())).thenReturn(new DeleteResponse());
 
         //Run Test
         mockMvc.perform(delete("/category")
@@ -104,28 +129,41 @@ class CategoryControllerTest {
     public void deleteCategories_InvalidIds_ShouldReturnFalse() throws Exception {
         //Initialize
         String ids = "asdf";
-        when(categoryService.deleteCategories(anyList())).thenReturn(true);
 
         //Run Test
         mockMvc.perform(delete("/category")
-                .contentType(MediaType.APPLICATION_JSON)
-                .param("ids", objectMapper.writeValueAsString(ids)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("ids", objectMapper.writeValueAsString(ids)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$").value(false));
+                .andExpect(jsonPath("$.generalError").value(Errors.INVALID_ARGUMENT.description));
+
+        //Verify
+        verify(categoryService, times(0)).deleteCategories(anyList());
     }
 
     @Test
     public void deleteCategories_CouldNotDeleteSuccessfully_ShouldReturnFalse() throws Exception {
         //Initialize
         List<Long> ids = createIds();
-        when(categoryService.deleteCategories(anyList())).thenReturn(false);
+        DeleteResponse deleteResponse = new DeleteResponse();
+        deleteResponse.setGeneralError("General Errror");
+        when(categoryService.deleteCategories(anyList())).thenReturn(deleteResponse);
 
         //Run Test
         mockMvc.perform(delete("/category")
-                .contentType(MediaType.APPLICATION_JSON)
-                .param("ids", objectMapper.writeValueAsString(ids)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("ids", objectMapper.writeValueAsString(ids)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").value(false));
+                .andExpect(jsonPath("$.generalError").value(deleteResponse.getGeneralError()));
+    }
+
+    @Test
+    public void deleteCategories_WithCategoriesThatUsedByProducts_ShouldReturnFalse() throws Exception {
+        //Initialize
+        List<Long> ids = createIds();
+        Category categoryWithId2 = new Category(2L, "deneme");
+//        categoryWithId2.setProducts(new);
+//        when(categoryService.findById(eq(2L))).thenReturn()
     }
 
     private List<Category> createCategories() {

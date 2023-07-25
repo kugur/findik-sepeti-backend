@@ -5,13 +5,13 @@ spring:
   jpa:
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
     show-sql: true
     hibernate:
       ddl-auto: update
       dialect: org.hibernate.dialect.PostgreSQL95Dialect
   datasource:
-    url: jdbc:postgresql://localhost:32768/findik_sepeti?currentSchema=kolip
+    url: jdbc:postgresql://localhost:32769/findik_sepeti?currentSchema=kolip
     username: postgres
     password: postgrespw
   security:

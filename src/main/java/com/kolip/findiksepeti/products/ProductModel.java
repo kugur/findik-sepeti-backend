@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.products;
 
+import com.kolip.findiksepeti.categories.Category;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -14,14 +15,14 @@ public class ProductModel {
     private String name;
     private BigDecimal price;
     private String imageUrl;
-    private String category;
+    private Category category;
     private String description;
     private boolean imageFileChanged;
 
     public ProductModel() {
     }
 
-    public ProductModel(String name, BigDecimal price, String imageUrl, String category, MultipartFile imageFile,
+    public ProductModel(String name, BigDecimal price, String imageUrl, Category category, MultipartFile imageFile,
                         String description) {
         super();
         this.imageFile = imageFile;
@@ -74,11 +75,11 @@ public class ProductModel {
         this.imageUrl = imageUrl;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
@@ -96,6 +97,13 @@ public class ProductModel {
 
     public void setImageFileChanged(boolean imageFileChanged) {
         this.imageFileChanged = imageFileChanged;
+    }
+
+    public void setCategoryId(Long id) {
+        if (category == null) {
+            category = new Category();
+        }
+        category.setId(id);
     }
 
     @Override
