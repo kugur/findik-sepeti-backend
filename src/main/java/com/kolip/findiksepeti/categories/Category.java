@@ -1,5 +1,8 @@
 package com.kolip.findiksepeti.categories;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kolip.findiksepeti.products.Product;
 import jakarta.persistence.*;
 
@@ -26,6 +29,7 @@ public class Category {
 
     private String name;
 
+    @JsonBackReference
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products;
 
