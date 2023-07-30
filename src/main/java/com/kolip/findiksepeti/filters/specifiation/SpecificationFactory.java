@@ -1,16 +1,18 @@
 package com.kolip.findiksepeti.filters.specifiation;
 
 import com.kolip.findiksepeti.filters.Filter;
+import com.kolip.findiksepeti.filters.FilterOperations;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class SpecificationFactory {
+public class
+SpecificationFactory {
 
     public <T> Specification<T> getSpecification(List<Filter> filterList, Class<T> specificationElement) {
-        Specification<T> combinedSpecification = null;
+        Specification<T> combinedSpecification = getBuildSpecification(new Filter("", FilterOperations.DEFAULT, ""), specificationElement);
         Specification<T> currentSpecification;
 
         for (Filter filter : filterList) {

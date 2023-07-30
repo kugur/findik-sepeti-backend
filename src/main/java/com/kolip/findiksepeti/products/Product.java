@@ -3,6 +3,8 @@ package com.kolip.findiksepeti.products;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kolip.findiksepeti.categories.Category;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -22,7 +24,7 @@ public class Product {
     private BigDecimal price = BigDecimal.ZERO;
     private String imageUrl;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "category_id", nullable = false)
     @JsonManagedReference
     private Category category;

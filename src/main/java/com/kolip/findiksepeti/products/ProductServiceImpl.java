@@ -37,7 +37,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<Product> getProducts(List<Filter> filters, PageRequest pageRequest) {
         Specification<Product> specification = specificationFactory.getSpecification(filters, Product.class);
-        return productRepository.findAll(specification, pageRequest);
+        Page<Product> result =  productRepository.findAll(specification, pageRequest);
+        return result;
     }
 
     @Override
