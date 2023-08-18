@@ -81,6 +81,28 @@ class CategoryControllerTest {
     }
 
     @Test
+    public void deneme() {
+        //Initialize
+        Category willBeUpdatedCategory = new Category(1L, "raw");
+        String categoryJson = "";
+        try {
+            categoryJson = objectMapper.writeValueAsString(willBeUpdatedCategory);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        assertNotEquals("", categoryJson);
+        Category result = null;
+        try {
+            result = objectMapper.readValue(categoryJson, Category.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        assertNotNull(result);
+    }
+
+    @Test
     public void updateCategory_WithInvalidValue_ShouldReturnInvalidError() throws Exception {
         //Initialize
         String requestBody = "{asdf: asdf}";
@@ -146,7 +168,7 @@ class CategoryControllerTest {
         //Initialize
         List<Long> ids = createIds();
         DeleteResponse deleteResponse = new DeleteResponse();
-        deleteResponse.setGeneralError("General Errror");
+        deleteResponse.setGeneralError("General Error");
         when(categoryService.deleteCategories(anyList())).thenReturn(deleteResponse);
 
         //Run Test
@@ -155,15 +177,6 @@ class CategoryControllerTest {
                         .param("ids", objectMapper.writeValueAsString(ids)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.generalError").value(deleteResponse.getGeneralError()));
-    }
-
-    @Test
-    public void deleteCategories_WithCategoriesThatUsedByProducts_ShouldReturnFalse() throws Exception {
-        //Initialize
-        List<Long> ids = createIds();
-        Category categoryWithId2 = new Category(2L, "deneme");
-//        categoryWithId2.setProducts(new);
-//        when(categoryService.findById(eq(2L))).thenReturn()
     }
 
     private List<Category> createCategories() {

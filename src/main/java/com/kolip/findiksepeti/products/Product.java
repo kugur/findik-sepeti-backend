@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.products;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kolip.findiksepeti.categories.Category;
 import jakarta.persistence.*;
@@ -24,9 +25,9 @@ public class Product {
     private BigDecimal price = BigDecimal.ZERO;
     private String imageUrl;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    @JsonManagedReference
+    @JsonBackReference
     private Category category;
 
     @Column(length = 2048)
