@@ -6,13 +6,15 @@ import com.kolip.findiksepeti.common.UpdateResponse;
 import com.kolip.findiksepeti.products.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,61 +51,43 @@ class CategoryServiceImplTest {
     @Test
     public void addCategories_WithCategories_ReturnTrue() {
         //Initialize
-        List<Category> willBePersistedCategories = createCategoryListWithOutId();
-        when(categoryRepository.saveAll(any())).thenReturn(createCategoryList());
+        Category willBePersistedCategory = createCategoryListWithOutId().get(0);
+        when(categoryRepository.save(any())).thenReturn(createCategoryList().get(0));
 
         //Run Test
-        boolean result = instanceUnderTest.addCategories(willBePersistedCategories);
+        UpdateResponse<Category> result = instanceUnderTest.addCategories(willBePersistedCategory);
 
         //Verify Result
-        verify(categoryRepository).saveAll(any());
-        assertTrue(result);
+        verify(categoryRepository).save(any());
+        assertTrue(result.isSuccessful());
     }
 
     @Test
     public void addCategories_WithNullValues_ReturnFalse() {
         //Initialize
-        List<Category> categories = null;
+        Category category = null;
 
         //Run Test
-        boolean result = instanceUnderTest.addCategories(categories);
+        UpdateResponse<Category> result = instanceUnderTest.addCategories(category);
 
         //Verify Result
         verify(categoryRepository, times(0)).saveAll(any());
-        assertFalse(result);
+        assertFalse(result.isSuccessful());
     }
 
     @Test
     public void addCategories_WithNotNullIds_SetIdsNullAndReturnTrue() {
         //Initialize
-        List<Category> categories = createCategoryList();
-        when(categoryRepository.saveAll(any())).thenReturn(categories);
+        Category category = createCategoryList().get(0);
+        when(categoryRepository.save(any())).thenReturn(category);
 
         //Run Test
-        boolean result = instanceUnderTest.addCategories(categories);
+        UpdateResponse<Category> result = instanceUnderTest.addCategories(category);
 
         //Verify Result
-        verify(categoryRepository).saveAll(anyList());
-        verify(categoryRepository).saveAll(argThat(argument -> isAllIdsNull(argument.iterator())));
-        assertTrue(result);
-    }
-
-    @Test
-    public void addCategories_WithOneOfItemNull_ShouldSaveOthersAndReturnTrue() {
-        //Initialize
-        List<Category> categories = createCategoryList();
-        List<Category> categoriesWithNull = createCategoryList();
-        categoriesWithNull.add(null);
-        ArgumentCaptor<List<Category>> saveArgumentCaptor = ArgumentCaptor.forClass(List.class);
-        when(categoryRepository.saveAll(saveArgumentCaptor.capture())).thenReturn(categories);
-
-        //Run Test
-        boolean result = instanceUnderTest.addCategories(categoriesWithNull);
-
-        //Verify Result
-        verify(categoryRepository).saveAll(anyList());
-        assertTrue(result);
-        assertEquals(categories.size(), saveArgumentCaptor.getValue().size(), "null items should not be saved");
+        verify(categoryRepository).save(any());
+        verify(categoryRepository).save(argThat(argument -> argument.getId() == null));
+        assertTrue(result.isSuccessful());
     }
 
     @Test

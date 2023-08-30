@@ -3,12 +3,10 @@ package com.kolip.findiksepeti.categories;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kolip.findiksepeti.products.Product;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -16,7 +14,7 @@ import java.util.List;
  * Category Entity
  */
 @Entity
-public class Category {
+public class Category implements Cloneable, Serializable {
 
     public Category() {
     }
@@ -32,7 +30,8 @@ public class Category {
 
     private String name;
 
-    @JsonManagedReference
+    @JsonBackReference
+    @JsonIgnore
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products;
 
@@ -63,5 +62,10 @@ public class Category {
     @Override
     public String toString() {
         return "Category{" + "id=" + id + ", name='" + name + '\'' + '}';
+    }
+
+    @Override
+    protected Category clone() throws CloneNotSupportedException {
+        return (Category) super.clone();
     }
 }

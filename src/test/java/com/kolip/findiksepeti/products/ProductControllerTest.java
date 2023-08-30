@@ -68,6 +68,7 @@ class ProductControllerTest {
         mockMvc.perform(get("/products").param("filters", "")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[*].name").value(hasItem(productThatFetched.getName())))
                 .andExpect(jsonPath("$.content[0].price").value(productThatFetched.getPrice()))
+                .andExpect(jsonPath("$.content[0].category.name").value(productThatFetched.getCategory().getName()))
                 .andExpect(jsonPath("$.content[*].imageUrl").value(hasItem(productThatFetched.getImageUrl())));
 
         //verify results

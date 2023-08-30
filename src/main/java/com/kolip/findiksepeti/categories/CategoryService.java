@@ -8,7 +8,7 @@ import java.util.List;
 public interface CategoryService {
     List<Category> getCategories();
 
-    boolean addCategories(List<Category> categories);
+    UpdateResponse<Category> addCategories(Category category);
 
     DeleteResponse deleteCategories(List<Long> anyList);
 

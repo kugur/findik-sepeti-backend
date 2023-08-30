@@ -13,9 +13,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,17 +55,21 @@ class CategoryControllerTest {
     }
 
     @Test
-    public void addCategories_WithNewCategories_ShouldReturnOK() throws Exception {
+    public void addCategory_WithNewCategory_ShouldReturnOK() throws Exception {
         //Initialize
-        List<Category> willBePersistedCategories = createCategoriesWithoutId();
-        when(categoryService.addCategories(any())).thenReturn(true);
+        Category willBePersistedCategory = createCategoriesWithoutId().get(0);
+        Category updatedCategory = willBePersistedCategory.clone();
+        updatedCategory.setId(1L);
+        UpdateResponse<Category> updateResponse = new UpdateResponse<>(updatedCategory);
+        when(categoryService.addCategories(eq(willBePersistedCategory))).thenReturn(updateResponse);
 
         //Run test
-        mockMvc.perform(post("/category").content(objectMapper.writeValueAsString(willBePersistedCategories))
-                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+        mockMvc.perform(post("/category").content(objectMapper.writeValueAsString(willBePersistedCategory))
+                                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
         //Verify Result
-        verify(categoryService).addCategories(argThat(argument -> argument.size() == willBePersistedCategories.size()));
+        verify(categoryService).addCategories(
+                argThat(argument -> argument.getName().equals(willBePersistedCategory.getName())));
     }
 
     @Test
@@ -72,12 +80,11 @@ class CategoryControllerTest {
 
         //Run Test
         mockMvc.perform(put("/category").content(objectMapper.writeValueAsString(willBeUpdatedCategory))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                                .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
         //Verify Result
-        verify(categoryService).update(argThat(argument -> Objects.equals(argument.getId(),
-                willBeUpdatedCategory.getId())));
+        verify(categoryService).update(
+                argThat(argument -> Objects.equals(argument.getId(), willBeUpdatedCategory.getId())));
     }
 
     @Test
@@ -119,9 +126,8 @@ class CategoryControllerTest {
         when(categoryService.deleteCategories(anyList())).thenReturn(new DeleteResponse());
 
         //Run Test
-        mockMvc.perform(delete("/category")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("ids", objectMapper.writeValueAsString(willBeDeletedIds)))
+        mockMvc.perform(delete("/category").contentType(MediaType.APPLICATION_JSON)
+                                .param("ids", objectMapper.writeValueAsString(willBeDeletedIds)))
                 .andExpect(status().isOk());
 
         //Verify Result
@@ -138,9 +144,8 @@ class CategoryControllerTest {
         when(categoryService.deleteCategories(anyList())).thenReturn(new DeleteResponse());
 
         //Run Test
-        mockMvc.perform(delete("/category")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("ids", objectMapper.writeValueAsString(willBeDeletedIds)))
+        mockMvc.perform(delete("/category").contentType(MediaType.APPLICATION_JSON)
+                                .param("ids", objectMapper.writeValueAsString(willBeDeletedIds)))
                 .andExpect(status().isOk());
 
         //Verify Result
@@ -153,10 +158,8 @@ class CategoryControllerTest {
         String ids = "asdf";
 
         //Run Test
-        mockMvc.perform(delete("/category")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("ids", objectMapper.writeValueAsString(ids)))
-                .andExpect(status().isBadRequest())
+        mockMvc.perform(delete("/category").contentType(MediaType.APPLICATION_JSON)
+                                .param("ids", objectMapper.writeValueAsString(ids))).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.generalError").value(Errors.INVALID_ARGUMENT.description));
 
         //Verify
@@ -172,10 +175,8 @@ class CategoryControllerTest {
         when(categoryService.deleteCategories(anyList())).thenReturn(deleteResponse);
 
         //Run Test
-        mockMvc.perform(delete("/category")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("ids", objectMapper.writeValueAsString(ids)))
-                .andExpect(status().isOk())
+        mockMvc.perform(delete("/category").contentType(MediaType.APPLICATION_JSON)
+                                .param("ids", objectMapper.writeValueAsString(ids))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.generalError").value(deleteResponse.getGeneralError()));
     }
 

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -28,14 +27,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public boolean addCategories(List<Category> categories) {
-        if (categories == null) {
-            return false;
+    public UpdateResponse<Category> addCategories(Category category) {
+        if (category == null) {
+            return new UpdateResponse<>(Errors.INVALID_ARGUMENT.description);
         }
-        categories = categories.stream().filter(Objects::nonNull).toList();
-        setIdsNull(categories);
-        categoryRepository.saveAll(categories);
-        return true;
+        category.setId(null); //Be sure that id is null
+        Category createdCategory = categoryRepository.save(category);
+        return new UpdateResponse<>(createdCategory);
     }
 
     @Override
@@ -70,8 +68,7 @@ public class CategoryServiceImpl implements CategoryService {
         } catch (DataIntegrityViolationException e) {
             errorMessage = Errors.INVALID_ARGUMENT.description;
         } catch (Exception e) {
-            logger.error("Exception occurred while deleting category by id: {} exception e: {}",
-                    id, e.getMessage());
+            logger.error("Exception occurred while deleting category by id: {} exception e: {}", id, e.getMessage());
             errorMessage = Errors.UNKNOWN_ERROR.description;
         }
         return errorMessage;

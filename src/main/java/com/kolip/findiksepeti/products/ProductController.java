@@ -38,8 +38,10 @@ public class ProductController {
                                      String paginationJson) throws InterruptedException {
         logger.info("PageRequest {}", paginationJson);
         logger.info("Received filters {}", filtersJson);
-        return productService.getProducts(filterConverter.convert(filtersJson),
-                                          pageRequestConverter.convert(paginationJson));
+        Page<Product> result = productService.getProducts(filterConverter.convert(filtersJson),
+                                                          pageRequestConverter.convert(paginationJson));
+        logger.info("getProducts Result :: {}", result);
+        return result;
     }
 
     @PostMapping("/products")
