@@ -115,7 +115,7 @@ class CategoryControllerTest {
         String requestBody = "{asdf: asdf}";
 
         //Run Test
-        mockMvc.perform(put("/category").contentType(requestBody).contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(put("/category").content(requestBody).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 

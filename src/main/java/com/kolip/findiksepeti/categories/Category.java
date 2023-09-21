@@ -30,7 +30,6 @@ public class Category implements Cloneable, Serializable {
 
     private String name;
 
-    @JsonBackReference
     @JsonIgnore
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products;

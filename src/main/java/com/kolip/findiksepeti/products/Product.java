@@ -25,7 +25,6 @@ public class Product {
     private BigDecimal price = BigDecimal.ZERO;
     private String imageUrl;
 
-    @JsonManagedReference
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

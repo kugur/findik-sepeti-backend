@@ -2,8 +2,12 @@ package com.kolip.findiksepeti.cart;
 
 import com.kolip.findiksepeti.products.Product;
 
-public interface CartService {
-    boolean addProduct(Product product);
+import java.util.List;
 
-    boolean deleteProduct(Product product);
+public interface CartService {
+    boolean addItem(CartItem product);
+
+    boolean deleteItem(Long productId);
+
+    List<CartItem> getCartItems();
 }

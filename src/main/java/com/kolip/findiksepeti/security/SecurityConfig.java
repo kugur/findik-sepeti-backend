@@ -56,7 +56,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers("/admin").hasRole("ADMIN"))
                 .authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.PUT, "/users")
                         .hasAnyRole("USER", "PRE_USER"));
-        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/products").permitAll());
+        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/cart").permitAll());
+        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.POST, "/cart").permitAll());
+        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.DELETE, "/cart").permitAll());
+        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/products/**").permitAll());
         http.authorizeHttpRequests(
                 requestReq -> requestReq.requestMatchers(HttpMethod.POST, "/products").hasAnyRole("ADMIN"));
         http.authorizeHttpRequests(

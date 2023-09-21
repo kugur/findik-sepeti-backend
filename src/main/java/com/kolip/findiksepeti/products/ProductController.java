@@ -17,15 +17,15 @@ public class ProductController {
     private FilterConverter filterConverter;
     private PageRequestConverter pageRequestConverter;
 
-
     public ProductController(ProductService productService, FilterConverter filterConverter,
                              PageRequestConverter pageRequestConverter) {
         this.productService = productService;
         this.filterConverter = filterConverter;
         this.pageRequestConverter = pageRequestConverter;
+        logger.info("ProductController has been created");
     }
 
-    @RequestMapping(value = "/product/{productId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/products/{productId}", method = RequestMethod.GET)
     public ResponseEntity<Product> getProduct(@PathVariable("productId") Long productId) {
         Product product = productService.getProduct(productId);
         return product == null ? ResponseEntity.status(HttpStatusCode.valueOf(404)).build() :
