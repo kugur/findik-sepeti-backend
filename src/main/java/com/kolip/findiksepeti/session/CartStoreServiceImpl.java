@@ -1,14 +1,12 @@
 package com.kolip.findiksepeti.session;
 
 import com.kolip.findiksepeti.cart.CartItem;
-import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.SessionScope;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -38,5 +36,10 @@ public class CartStoreServiceImpl implements SessionStoreService<CartItem> {
     @Override
     public List<CartItem> getAll() {
         return new ArrayList<>(storedMap.values());
+    }
+
+    @Override
+    public void deleteAll() {
+        storedMap.clear();
     }
 }

@@ -71,6 +71,26 @@ class CartServiceImplTest {
     @Test
     public void getCartItems_WithTwoItemsOnList_ShouldReturnList() {
         //Initialize
+       List<CartItem> cartItems = initializeCartItems();
+        //Run Test
+        List<CartItem> result = instanceUnderTest.getCartItems();
+
+        //Verify
+        assertEquals(cartItems.size(), result.size());
+        verify(sessionStoreService).getAll();
+    }
+
+    @Test
+    public void clearCartItems_WithValid_ShouldDeleteAllItems() {
+        //Run Test
+        instanceUnderTest.clearCartItems();
+
+        //Verify Result
+        verify(sessionStoreService).deleteAll();
+    }
+
+    private ArrayList<CartItem> initializeCartItems() {
+        //Initialize
         CartItem cartItem1 = CartGenerator.generateCartItem();
         cartItem1.getProduct().setId(1L);
         cartItem1.setId(111L);
@@ -82,11 +102,6 @@ class CartServiceImplTest {
         cartItems.add(cartItem2);
         when(sessionStoreService.getAll()).thenReturn(cartItems);
 
-        //Run Test
-        List<CartItem> result = instanceUnderTest.getCartItems();
-
-        //Verify
-        assertEquals(cartItems.size(), result.size());
-        verify(sessionStoreService).getAll();
+        return cartItems;
     }
 }

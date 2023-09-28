@@ -10,4 +10,6 @@ public interface CartService {
     boolean deleteItem(Long productId);
 
     List<CartItem> getCartItems();
+
+    void clearCartItems();
 }

@@ -35,7 +35,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {ProductServiceImpl.class})
-@ContextConfiguration(classes = {LibraryConfiguration.class})
+//@ContextConfiguration(classes = {LibraryConfiguration.class})
 class ProductServiceImplTest {
 
     private ProductServiceImpl instanceUnderTest;

@@ -15,4 +15,6 @@ public interface SessionStoreService<T> {
     void delete(Long key);
 
     List<T> getAll();
+
+    void deleteAll();
 }

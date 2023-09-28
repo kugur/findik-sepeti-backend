@@ -1,6 +1,5 @@
 package com.kolip.findiksepeti.cart;
 
-import com.kolip.findiksepeti.products.Product;
 import com.kolip.findiksepeti.session.SessionStoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,5 +39,10 @@ public class CartServiceImpl implements CartService {
     @Override
     public List<CartItem> getCartItems() {
         return sessionStoreService.getAll();
+    }
+
+    @Override
+    public void clearCartItems() {
+        sessionStoreService.deleteAll();
     }
 }
