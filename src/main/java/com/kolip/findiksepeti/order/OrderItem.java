@@ -4,12 +4,17 @@ import com.kolip.findiksepeti.common.AbstractEntity;
 import com.kolip.findiksepeti.products.Product;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
+
+import java.math.BigDecimal;
 
 @Entity
 public class OrderItem extends AbstractEntity {
     @OneToOne
     private Product product;
     private int quantity;
+    @Transient
+    private BigDecimal total;
 
     public OrderItem() {
     }
@@ -33,6 +38,10 @@ public class OrderItem extends AbstractEntity {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public BigDecimal getTotal() {
+        return product.getPrice().multiply(BigDecimal.valueOf(quantity));
     }
 
     @Override

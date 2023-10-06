@@ -16,8 +16,8 @@ public class PageRequestConverter {
     private Logger logger = LoggerFactory.getLogger(PageRequestConverter.class);
 
     private ObjectMapper mapper;
-    private int defaultPage = 0;
-    private int defaultPageSize = 10;
+    private final int defaultPage = 0;
+    private final int defaultPageSize = 10;
     private final Sort defaultSort = Sort.by(Sort.Direction.ASC, "Id");
 
     public PageRequestConverter() {

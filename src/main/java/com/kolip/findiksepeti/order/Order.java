@@ -5,10 +5,17 @@ import com.kolip.findiksepeti.payment.Payment;
 import com.kolip.findiksepeti.shipping.Shipping;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+
 @Entity
+@Table(name = "sales_order")
+//@NamedEntityGraph(name = "order.findAll",
+//        attributeNodes = {@NamedAttributeNode("shipping"), @NamedAttributeNode("orderItems")},
+//        includeAllAttributes = true)
 public class Order extends AbstractEntity {
+
     @Transient
     private Payment payment;
     @OneToMany(cascade = CascadeType.ALL)
@@ -16,7 +23,10 @@ public class Order extends AbstractEntity {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus status = OrderStatus.ORDER_CREATED;
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "shipping_id")
     private Shipping shipping;
+    @Transient
+    private long total;
 
     public Order() {
     }
@@ -51,6 +61,12 @@ public class Order extends AbstractEntity {
 
     public void setShipping(Shipping shipping) {
         this.shipping = shipping;
+    }
+
+    public BigDecimal getTotal() {
+        return orderItems.stream().map(orderItem -> orderItem.getProduct().getPrice()
+                .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Override

@@ -2,19 +2,21 @@ package com.kolip.findiksepeti.order;
 
 import com.kolip.findiksepeti.cart.CartItem;
 import com.kolip.findiksepeti.cart.CartService;
-import com.kolip.findiksepeti.payment.OrderRepository;
 import com.kolip.findiksepeti.payment.PaymentService;
-import com.kolip.findiksepeti.shipping.ShippingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -22,8 +24,6 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(classes = {OrderServiceImpl.class})
 public class OrderServiceImplTest {
     private OrderService instanceUnderTest;
-    @MockBean
-    ShippingService shippingService;
     @MockBean
     PaymentService paymentService;
     @MockBean
@@ -33,7 +33,7 @@ public class OrderServiceImplTest {
 
     @BeforeEach
     public void setup() {
-        instanceUnderTest = new OrderServiceImpl(shippingService, paymentService, orderRepository, cartService);
+        instanceUnderTest = new OrderServiceImpl(paymentService, orderRepository, cartService);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class OrderServiceImplTest {
         assertEquals(OrderStatus.ORDER_CREATED, status);
         verify(paymentService).pay(any());
         verify(orderRepository).save(any());
-        verify(cartService, times(cartItemCount)).deleteItem(any());
+        verify(cartService).clearCartItems();
     }
 
     @Test
@@ -120,6 +120,22 @@ public class OrderServiceImplTest {
         verify(paymentService, times(0)).pay(any());
         verify(orderRepository, times(0)).save(any());
         verify(cartService).clearCartItems();
+    }
+
+    @Test
+    public void getProducts_WithPageRequest_ShouldCallRepository() {
+        //Initialize
+        Order createdOrder = OrderGenerator.createOder(2);
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Order> persistedOrder = new PageImpl<>(List.of(createdOrder));
+        when(orderRepository.findAll(eq(pageRequest))).thenReturn(persistedOrder);
+
+        //Run Test
+        Page<Order> orders = instanceUnderTest.getProducts(pageRequest);
+
+        //Verify Result
+        assertNotNull(orders);
+        assertEquals(persistedOrder, orders);
     }
 
     private void mockResponse(Order receivedOrder, boolean paymentResult) {

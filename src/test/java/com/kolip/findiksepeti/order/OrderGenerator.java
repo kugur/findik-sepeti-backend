@@ -4,7 +4,8 @@ import com.kolip.findiksepeti.payment.Payment;
 import com.kolip.findiksepeti.products.ProductGenerator;
 import com.kolip.findiksepeti.shipping.Shipping;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderGenerator {
 
@@ -18,9 +19,11 @@ public class OrderGenerator {
         shipping.setAddress("teslimat adresi vs..");
         order.setShipping(shipping);
 
-        OrderItem orderItem1 = new OrderItem(ProductGenerator.createProduct(1L), 2);
-        OrderItem orderItem2 = new OrderItem(ProductGenerator.createProduct(2L), 1);
-        order.setOrderItems(Arrays.asList(orderItem1, orderItem2));
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (int i = 0; i < orderItemCount; i++) {
+            orderItems.add(new OrderItem(ProductGenerator.createProduct(orderItemCount + 1L), 2));
+        }
+        order.setOrderItems(orderItems);
 
         return order;
     }

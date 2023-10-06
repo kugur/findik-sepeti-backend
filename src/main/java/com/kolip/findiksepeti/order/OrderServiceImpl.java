@@ -2,11 +2,11 @@ package com.kolip.findiksepeti.order;
 
 import com.kolip.findiksepeti.cart.CartItem;
 import com.kolip.findiksepeti.cart.CartService;
-import com.kolip.findiksepeti.payment.OrderRepository;
 import com.kolip.findiksepeti.payment.PaymentService;
-import com.kolip.findiksepeti.shipping.ShippingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,14 +16,11 @@ import org.springframework.stereotype.Service;
 public class OrderServiceImpl implements OrderService {
     private Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
-    private final ShippingService shippingService;
     private final PaymentService paymentService;
     private final OrderRepository orderRepository;
     private final CartService cartService;
 
-    public OrderServiceImpl(ShippingService shippingService, PaymentService paymentService,
-                            OrderRepository orderRepository, CartService cartService) {
-        this.shippingService = shippingService;
+    public OrderServiceImpl(PaymentService paymentService, OrderRepository orderRepository, CartService cartService) {
         this.paymentService = paymentService;
         this.orderRepository = orderRepository;
         this.cartService = cartService;
@@ -42,12 +39,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order createdOrder = orderRepository.save(order);
-        clearCarts(order);
+        cartService.clearCartItems();
         return createdOrder.getStatus();
     }
 
-    private void clearCarts(Order order) {
-        order.getOrderItems().forEach(orderItem -> cartService.deleteItem(orderItem.getProduct().getId()));
+    @Override
+    public Page<Order> getProducts(PageRequest pageInfo) {
+        return orderRepository.findAll(pageInfo);
     }
 
     private boolean validate(Order order) {

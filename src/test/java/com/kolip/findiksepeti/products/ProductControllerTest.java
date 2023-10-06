@@ -44,11 +44,12 @@ class ProductControllerTest {
     @MockBean
     private ProductServiceImpl productService;
 
-    private FilterConverter filterConverter;
-    private PageRequestConverter pageRequestConverter;
 
     @BeforeEach
     public void setup() {
+        FilterConverter filterConverter;
+        PageRequestConverter pageRequestConverter;
+
         filterConverter = new FilterConverter();
         pageRequestConverter = new PageRequestConverter();
 
@@ -62,7 +63,7 @@ class ProductControllerTest {
         String filterJson = "";
         Product productThatFetched = new Product("raw_nuts", 11, "/raw_nuts.jpp");
         when(productService.getProducts(any(List.class), any())).thenReturn(
-                new PageImpl(Arrays.asList(productThatFetched)));
+                new PageImpl(List.of(productThatFetched)));
 
         //Run test
         mockMvc.perform(get("/products").param("filters", "")).andExpect(status().isOk())
@@ -72,7 +73,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.content[*].imageUrl").value(hasItem(productThatFetched.getImageUrl())));
 
         //verify results
-        verify(productService, times(1)).getProducts(argThat(argument -> argument.size() == 0), any());
+        verify(productService, times(1)).getProducts(argThat(List::isEmpty), any());
     }
 
     @Test
@@ -85,7 +86,7 @@ class ProductControllerTest {
 
         //Setup mock items
         when(productService.getProducts(any(List.class), any())).thenReturn(
-                new PageImpl(Arrays.asList(new Product(productName, productPrice, imageUrl))));
+                new PageImpl(List.of(new Product(productName, productPrice, imageUrl))));
 
         // Run test
         mockMvc.perform(get("/products").param("filters", filterJson)).andExpect(status().isOk())
@@ -113,7 +114,7 @@ class ProductControllerTest {
                 "{\"name\":\"price\", \"operation\":\"GREATER\" , \"value\":\"22\"}]";
         Product productThatFetched = new Product("raw_nuts", 11, "/raw_nuts.jpp");
         when(productService.getProducts(any(List.class), any())).thenReturn(
-                new PageImpl(Arrays.asList(productThatFetched)));
+                new PageImpl(List.of(productThatFetched)));
 
         //run test
         mockMvc.perform(get("/products").param("filters", filterJson)).andExpect(status().isOk())
@@ -172,7 +173,7 @@ class ProductControllerTest {
         String pageRequest = "{\"page\": " + pageNumber + ", \"size\":" + pageSize + "}";
         ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(PageRequest.class);
         when(productService.getProducts(any(List.class), pageRequestArgument.capture())).thenReturn(
-                new PageImpl(new ArrayList<>()));
+                new PageImpl<>(new ArrayList<>()));
 
         //Run test
         mockMvc.perform(get("/products").param("pageInfo", pageRequest)).andExpect(status().isOk());

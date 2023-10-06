@@ -1,11 +1,34 @@
 package com.kolip.findiksepeti.shipping;
 
 import com.kolip.findiksepeti.common.AbstractEntity;
-import jakarta.persistence.Entity;
+import com.kolip.findiksepeti.order.Order;
+import jakarta.persistence.*;
 
+//@Entity
 @Entity
 public class Shipping extends AbstractEntity {
+    @Id
+    private Long id;
+
     private String address;
+    private String note;
+    private String name;
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getAddress() {
         return address;
@@ -15,8 +38,9 @@ public class Shipping extends AbstractEntity {
         this.address = address;
     }
 
-    @Override
-    public String toString() {
-        return "Shipping{" + "address='" + address + '\'' + '}';
-    }
+    //    @Override
+    //    public String toString() {
+    //        return "Shipping{" + "address='" + address + '\'' + ", note='" + note + '\'' + ", name='" + name + '\'' +
+    //                ", id=" + id + '}';
+    //    }
 }
