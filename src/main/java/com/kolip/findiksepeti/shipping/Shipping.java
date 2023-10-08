@@ -4,7 +4,6 @@ import com.kolip.findiksepeti.common.AbstractEntity;
 import com.kolip.findiksepeti.order.Order;
 import jakarta.persistence.*;
 
-//@Entity
 @Entity
 public class Shipping extends AbstractEntity {
     @Id
@@ -37,10 +36,4 @@ public class Shipping extends AbstractEntity {
     public void setAddress(String address) {
         this.address = address;
     }
-
-    //    @Override
-    //    public String toString() {
-    //        return "Shipping{" + "address='" + address + '\'' + ", note='" + note + '\'' + ", name='" + name + '\'' +
-    //                ", id=" + id + '}';
-    //    }
 }

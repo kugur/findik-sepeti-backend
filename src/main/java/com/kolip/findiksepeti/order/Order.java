@@ -3,14 +3,17 @@ package com.kolip.findiksepeti.order;
 import com.kolip.findiksepeti.common.AbstractEntity;
 import com.kolip.findiksepeti.payment.Payment;
 import com.kolip.findiksepeti.shipping.Shipping;
+import com.kolip.findiksepeti.user.CustomUser;
 import jakarta.persistence.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-
 
 @Entity
 @Table(name = "sales_order")
+@DynamicUpdate
 //@NamedEntityGraph(name = "order.findAll",
 //        attributeNodes = {@NamedAttributeNode("shipping"), @NamedAttributeNode("orderItems")},
 //        includeAllAttributes = true)
@@ -25,6 +28,9 @@ public class Order extends AbstractEntity {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "shipping_id")
     private Shipping shipping;
+    private final LocalDateTime createdDate = LocalDateTime.now();
+    @ManyToOne
+    private CustomUser user;
     @Transient
     private long total;
 
@@ -47,6 +53,7 @@ public class Order extends AbstractEntity {
         this.orderItems = orderItems;
     }
 
+
     public OrderStatus getStatus() {
         return status;
     }
@@ -63,10 +70,21 @@ public class Order extends AbstractEntity {
         this.shipping = shipping;
     }
 
+    public CustomUser getUser() {
+        return user;
+    }
+
+    public void setUser(CustomUser user) {
+        this.user = user;
+    }
+
     public BigDecimal getTotal() {
         return orderItems.stream().map(orderItem -> orderItem.getProduct().getPrice()
-                .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .multiply(BigDecimal.valueOf(orderItem.getQuantity()))).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
     }
 
     @Override
