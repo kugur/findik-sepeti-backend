@@ -14,9 +14,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,11 +24,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserConverter userConverter;
+    private final RoleRepository roleRepository;
 
-    public UserServiceImpl(UserRepository userRepository, UserConverter userConverter) {
+    public UserServiceImpl(UserRepository userRepository, UserConverter userConverter, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         this.userConverter = userConverter;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
     public CustomUser createUser(UserDto userDto) {
         CustomUser user = new CustomUser(userDto.getFirstName(),
                 userDto.getLastName(), encodePassword(userDto.getPassword()),
-                userDto.getUsername(), userDto.getAddress(), userDto.getGender(), createAuthority());
+                userDto.getUsername(), userDto.getAddress(), userDto.getGender(), createRoles(Roles.User.getRoleName()));
         return userRepository.save(user);
     }
 
@@ -111,6 +111,14 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    private Set<Role> createRoles(String... roleNames) {
+        Set<Role> roles = new HashSet<>();
+        for (String role : roleNames) {
+            roles.add(getRole(role));
+        }
+        return roles;
+    }
+
     private Collection<SimpleGrantedAuthority> createAuthority(String... roles) {
         Collection<SimpleGrantedAuthority> authorities = new ArrayList();
         if (roles == null || roles.length == 0) {
@@ -129,5 +137,10 @@ public class UserServiceImpl implements UserService {
 //        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
 //        return encoder.encode(password);
 //        assertTrue(encoder.matches("myPassword", result));
+    }
+
+    @Override
+    public Role getRole(String roleName) {
+        return roleRepository.findByName(roleName).orElse(new Role(roleName));
     }
 }

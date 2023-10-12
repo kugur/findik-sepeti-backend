@@ -3,8 +3,11 @@ package com.kolip.findiksepeti.order;
 import com.kolip.findiksepeti.cart.CartItem;
 import com.kolip.findiksepeti.cart.CartService;
 import com.kolip.findiksepeti.payment.PaymentService;
+import com.kolip.findiksepeti.user.CustomUser;
+import com.kolip.findiksepeti.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -30,10 +33,12 @@ public class OrderServiceImplTest {
     OrderRepository orderRepository;
     @MockBean
     CartService cartService;
+    @MockBean
+    UserService userService;
 
     @BeforeEach
     public void setup() {
-        instanceUnderTest = new OrderServiceImpl(paymentService, orderRepository, cartService);
+        instanceUnderTest = new OrderServiceImpl(paymentService, orderRepository, cartService, userService);
     }
 
     @Test
@@ -41,6 +46,9 @@ public class OrderServiceImplTest {
         //Initialize
         Order receivedOrder = OrderGenerator.createOder(2);
         validMockResponse(receivedOrder);
+        CustomUser currentUser = new CustomUser();
+        currentUser.setId(111L);
+        when(userService.getCurrentUser()).thenReturn(currentUser);
 
         //Run Test
         OrderStatus orderStatus = instanceUnderTest.createOrder(receivedOrder);
@@ -48,7 +56,8 @@ public class OrderServiceImplTest {
         //Verify Result
         assertEquals(OrderStatus.ORDER_CREATED, orderStatus);
         verify(paymentService).pay(any());
-        verify(orderRepository).save(eq(receivedOrder));
+        verify(orderRepository).save(argThat(argument ->
+                argument.getUser() != null && argument.getStatus() == OrderStatus.ORDER_CREATED));
     }
 
     @Test
@@ -123,19 +132,23 @@ public class OrderServiceImplTest {
     }
 
     @Test
-    public void getProducts_WithPageRequest_ShouldCallRepository() {
+    public void getOrders_WithPageRequest_ShouldCallRepository() {
         //Initialize
+        CustomUser currentUser = new CustomUser();
+        currentUser.setId(111L);
         Order createdOrder = OrderGenerator.createOder(2);
         PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<Order> persistedOrder = new PageImpl<>(List.of(createdOrder));
-        when(orderRepository.findAll(eq(pageRequest))).thenReturn(persistedOrder);
+        when(orderRepository.findByUserId(eq(pageRequest), eq(currentUser.getId()))).thenReturn(persistedOrder);
+        when(userService.getCurrentUser()).thenReturn(currentUser);
 
         //Run Test
-        Page<Order> orders = instanceUnderTest.getProducts(pageRequest);
+        Page<Order> orders = instanceUnderTest.getOrders(pageRequest);
 
         //Verify Result
         assertNotNull(orders);
         assertEquals(persistedOrder, orders);
+
     }
 
     private void mockResponse(Order receivedOrder, boolean paymentResult) {
@@ -147,6 +160,7 @@ public class OrderServiceImplTest {
         });
         when(cartService.deleteItem(any())).thenReturn(true);
         when(cartService.getCartItems()).thenReturn(convertOrderItems(receivedOrder.getOrderItems()));
+
     }
 
     private void validMockResponse(Order receivedOrder) {

@@ -11,4 +11,7 @@ import org.springframework.data.repository.CrudRepository;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     @EntityGraph(attributePaths = {"shipping"})
     Page<Order> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"shipping"})
+    Page<Order> findByUserId(Pageable pageable, Long userId);
 }

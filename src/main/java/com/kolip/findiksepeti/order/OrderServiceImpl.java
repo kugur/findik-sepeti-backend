@@ -3,6 +3,7 @@ package com.kolip.findiksepeti.order;
 import com.kolip.findiksepeti.cart.CartItem;
 import com.kolip.findiksepeti.cart.CartService;
 import com.kolip.findiksepeti.payment.PaymentService;
+import com.kolip.findiksepeti.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -19,11 +20,14 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentService paymentService;
     private final OrderRepository orderRepository;
     private final CartService cartService;
+    private final UserService userService;
 
-    public OrderServiceImpl(PaymentService paymentService, OrderRepository orderRepository, CartService cartService) {
+    public OrderServiceImpl(PaymentService paymentService, OrderRepository orderRepository, CartService cartService,
+                            UserService userService) {
         this.paymentService = paymentService;
         this.orderRepository = orderRepository;
         this.cartService = cartService;
+        this.userService = userService;
     }
 
     @Override
@@ -38,14 +42,17 @@ public class OrderServiceImpl implements OrderService {
             return OrderStatus.FAILED_PAYMENT;
         }
 
+        //Set current User
+        order.setUser(userService.getCurrentUser());
+
         Order createdOrder = orderRepository.save(order);
         cartService.clearCartItems();
         return createdOrder.getStatus();
     }
 
     @Override
-    public Page<Order> getProducts(PageRequest pageInfo) {
-        return orderRepository.findAll(pageInfo);
+    public Page<Order> getOrders(PageRequest pageInfo) {
+        return orderRepository.findByUserId(pageInfo, userService.getCurrentUser().getId());
     }
 
     private boolean validate(Order order) {
@@ -64,7 +71,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (!isMatchWithCartsOnSession(order)) {
             logger.warn("OrderItems that sent, do not match with cartItems that stored on session. orderItems: {} ," +
-                                " cartItems: {} ", order.getOrderItems(), cartService.getCartItems());
+                    " cartItems: {} ", order.getOrderItems(), cartService.getCartItems());
             return false;
         }
 

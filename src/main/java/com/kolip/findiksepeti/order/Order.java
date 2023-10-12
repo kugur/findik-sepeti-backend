@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.order;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kolip.findiksepeti.common.AbstractEntity;
 import com.kolip.findiksepeti.payment.Payment;
 import com.kolip.findiksepeti.shipping.Shipping;
@@ -30,6 +31,7 @@ public class Order extends AbstractEntity {
     private Shipping shipping;
     private final LocalDateTime createdDate = LocalDateTime.now();
     @ManyToOne
+    @JsonIgnore
     private CustomUser user;
     @Transient
     private long total;

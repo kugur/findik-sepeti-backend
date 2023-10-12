@@ -32,7 +32,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         CustomUserDetails(CustomUser customUser) {
             super(customUser.getFirstName(), customUser.getLastName(), customUser.getPassword(), customUser.getEmail(),
-                    customUser.getAddress(), customUser.getGender(), customUser.getAuthorities());
+                    customUser.getAddress(), customUser.getGender(), customUser.getRoles());
+            this.id = customUser.getId();
         }
 
         @JsonIgnore

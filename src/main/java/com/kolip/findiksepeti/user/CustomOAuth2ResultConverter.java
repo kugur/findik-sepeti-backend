@@ -10,6 +10,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class CustomOAuth2ResultConverter implements Converter<OAuth2LoginAuthenticationToken, OAuth2AuthenticationToken> {
@@ -30,9 +32,9 @@ public class CustomOAuth2ResultConverter implements Converter<OAuth2LoginAuthent
         }
 
         if (user == null) {
-            Collection<SimpleGrantedAuthority> userAuthorities = new ArrayList<>();
-            userAuthorities.add(new SimpleGrantedAuthority(Roles.Pre_User.getRoleName()));
-            user = new CustomUser("", "", "", userEmail, "", null, userAuthorities);
+            Set<Role> roles = new HashSet<>();
+            roles.add(userService.getRole(Roles.Pre_User.getRoleName()));
+            user = new CustomUser("", "", "", userEmail, "", null, roles);
         }
         authorities.addAll(user.getAuthorities());
 

@@ -5,13 +5,11 @@ import com.kolip.findiksepeti.common.AbstractEntity;
 import jakarta.persistence.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity(name = "custom_user")
-public class    CustomUser extends AbstractEntity {
+public class CustomUser extends AbstractEntity {
 
     private String firstName;
     private String lastName;
@@ -39,20 +37,15 @@ public class    CustomUser extends AbstractEntity {
 //    }
 
     public CustomUser(String firstName, String lastName, String password, String email, String address,
-                      Gender gender,
-                      Collection<SimpleGrantedAuthority> authorities) {
+                      Gender gender, Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.email = email;
         this.address = address;
         this.gender = gender;
-        this.authorities = authorities;
-
-        //Set Roles
-        if (this.authorities != null) {
-            setAuthorities(this.authorities);
-        }
+        this.roles = roles;
+        setAuthorities(this.roles);
     }
 
     public Collection<SimpleGrantedAuthority> getAuthorities() {
@@ -63,14 +56,9 @@ public class    CustomUser extends AbstractEntity {
         return authorities;
     }
 
-    public void setAuthorities(Collection<SimpleGrantedAuthority> authorities) {
-        this.authorities = authorities;
-        if (roles == null) {
-            roles = new HashSet<>();
-        }
-        authorities.stream().forEach(authority -> {
-            roles.add(new Role(authority.getAuthority()));
-        });
+    public void setAuthorities(Set<Role> roles) {
+        this.authorities = roles.stream().map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 
     public void addRole(String roleToBeAdded) {
@@ -79,6 +67,10 @@ public class    CustomUser extends AbstractEntity {
             roles.add(new Role(roleToBeAdded));
             authorities.add(new SimpleGrantedAuthority(roleToBeAdded));
         }
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
     }
 
     public void removeRole(String roleToBeRemoved) {

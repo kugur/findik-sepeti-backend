@@ -2,6 +2,7 @@ package com.kolip.findiksepeti.order;
 
 import com.kolip.findiksepeti.common.AbstractEntity;
 import com.kolip.findiksepeti.products.Product;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;

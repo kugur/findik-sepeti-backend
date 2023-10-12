@@ -1,6 +1,8 @@
 package com.kolip.findiksepeti.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.kolip.findiksepeti.config.LibraryConfiguration;
 import com.kolip.findiksepeti.pagination.PageRequestConverter;
 import com.kolip.findiksepeti.products.Product;
 import com.kolip.findiksepeti.products.ProductGenerator;
@@ -8,11 +10,13 @@ import com.kolip.findiksepeti.shipping.Shipping;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -31,10 +35,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = {PageRequestConverter.class})
+@ContextConfiguration(classes = {LibraryConfiguration.class})
 class OrderControllerTest {
 
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper = new ObjectMapper();
+//    private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     public OrderService orderService;
@@ -43,6 +50,8 @@ class OrderControllerTest {
 
     @BeforeEach
     public void setUp() {
+        String javaVersion = System.getProperty("java.version");
+        System.out.println("Java Version: " + javaVersion);
         pageRequestConverter = new PageRequestConverter();
         mockMvc = MockMvcBuilders.standaloneSetup(new OrderController(orderService, pageRequestConverter)).build();
     }
@@ -74,13 +83,13 @@ class OrderControllerTest {
         String pageRequest = "{\"page\": " + pageNumber + ", \"size\":" + pageSize + "}";
         List<Order> orders = createOrders();
         ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(PageRequest.class);
-        when(orderService.getProducts(pageRequestArgument.capture())).thenReturn(new PageImpl<>(orders));
+        when(orderService.getOrders(pageRequestArgument.capture())).thenReturn(new PageImpl<>(orders));
 
         //Run Test
         mockMvc.perform(get("/order").param("pageInfo", pageRequest)).andExpect(status().isOk());
 
         //Verify Result
-        verify(orderService).getProducts(any());
+        verify(orderService).getOrders(any());
         assertEquals(pageNumber, pageRequestArgument.getValue().getPageNumber());
         assertEquals(pageSize, pageRequestArgument.getValue().getPageSize());
     }
@@ -90,7 +99,7 @@ class OrderControllerTest {
         //Initialize
         ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(PageRequest.class);
         List<Order> orders = createOrders();
-        when(orderService.getProducts(pageRequestArgument.capture())).thenReturn(new PageImpl<>(orders));
+        when(orderService.getOrders(pageRequestArgument.capture())).thenReturn(new PageImpl<>(orders));
 
         //Run Test
         mockMvc.perform(get("/order")).andExpect(status().isOk());
@@ -103,7 +112,7 @@ class OrderControllerTest {
         //Initialize
         ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(PageRequest.class);
         List<Order> orders = createOrders();
-        when(orderService.getProducts(pageRequestArgument.capture())).thenReturn(new PageImpl<>(orders));
+        when(orderService.getOrders(pageRequestArgument.capture())).thenReturn(new PageImpl<>(orders));
 
         //Run Test
         mockMvc.perform(get("/order")).andExpect(status().isOk());

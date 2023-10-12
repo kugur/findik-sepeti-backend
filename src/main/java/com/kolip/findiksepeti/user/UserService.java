@@ -11,4 +11,6 @@ public interface UserService {
     CustomUser updateUser(UserDto userDto);
 
     boolean deleteUser(String username);
+
+    Role getRole(String role);
 }

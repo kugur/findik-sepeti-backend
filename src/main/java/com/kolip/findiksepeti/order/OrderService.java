@@ -6,5 +6,5 @@ import org.springframework.data.domain.PageRequest;
 public interface OrderService {
     OrderStatus createOrder(Order order);
 
-    Page<Order> getProducts(PageRequest pageInfo);
+    Page<Order> getOrders(PageRequest pageInfo);
 }

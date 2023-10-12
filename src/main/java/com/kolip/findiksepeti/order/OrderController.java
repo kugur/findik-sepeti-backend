@@ -28,6 +28,6 @@ public class OrderController {
             @RequestParam(value = "pageInfo", defaultValue = "{\"page\":0,\"size\":10, \"sort\":\"DESC,id\"}")
             String paginationJson) {
         PageRequest pageRequest = pageRequestConverter.convert(paginationJson);
-        return orderService.getProducts(pageRequest);
+        return orderService.getOrders(pageRequest);
     }
 }
