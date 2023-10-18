@@ -5,6 +5,7 @@ import com.kolip.findiksepeti.categories.CategoryRepository;
 import com.kolip.findiksepeti.order.Order;
 import com.kolip.findiksepeti.order.OrderGenerator;
 import com.kolip.findiksepeti.order.OrderRepository;
+import com.kolip.findiksepeti.order.OrderStatus;
 import com.kolip.findiksepeti.products.Product;
 import com.kolip.findiksepeti.products.ProductRepository;
 import com.kolip.findiksepeti.user.CustomUser;
@@ -12,7 +13,7 @@ import com.kolip.findiksepeti.user.Gender;
 import com.kolip.findiksepeti.user.Role;
 import com.kolip.findiksepeti.user.UserRepository;
 import jakarta.persistence.EntityManager;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -57,7 +58,7 @@ class OrderRepositoryTest {
         assertNotNull(persistedOrder.getShipping().getAddress());
         assertNotNull(persistedOrder.getCreatedDate());
         assertEquals(LocalDateTime.now().withSecond(0).withNano(0),
-                     persistedOrder.getCreatedDate().withSecond(0).withNano(0));
+                persistedOrder.getCreatedDate().withSecond(0).withNano(0));
     }
 
     @Test
@@ -76,7 +77,7 @@ class OrderRepositoryTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void save_WithUpdatedUser_ShouldNotUpdateTheUser() {
         //Initialize
         Order toBePersistedOrder = generateOrderWithPersistedProducts(10);
@@ -89,7 +90,7 @@ class OrderRepositoryTest {
         System.out.println("--------- Persisted completed.-------------");
 
         //Run Test
-       orderRepository.save(toBePersistedOrder);
+        orderRepository.save(toBePersistedOrder);
         Optional<CustomUser> userOnDb = userRepository.findById(user.getId());
 
         //Verify Result
@@ -152,8 +153,23 @@ class OrderRepositoryTest {
         assertEquals(orderByUser1.getId(), resultForUser1.stream().findFirst().get().getId());
 
         assertEquals(orderByUser2.getId(), resultForUser2.get().findFirst().get().getId());
+    }
 
+    @Test
+    public void updateStatus_WithValidValues_ShouldUpdateStatus() {
+        //Initialize
+        OrderStatus newStatus = OrderStatus.INVALID_ORDER;
+        Order order = generateOrderWithPersistedProducts(2);
+        order = orderRepository.saveAndFlush(order);
+        entityManager.clear();
 
+        //Run Test
+        orderRepository.updateStatusById(newStatus, order.getId());
+
+        //Verify Result
+        Optional<Order> updatedOrder = orderRepository.findById(order.getId());
+        assertFalse(updatedOrder.isEmpty());
+        assertEquals(newStatus, updatedOrder.get().getStatus());
     }
 
     private Order generateOrderWithPersistedProducts(int orderItemCount) {
@@ -175,7 +191,7 @@ class OrderRepositoryTest {
 
     private CustomUser persistUser() {
         CustomUser user = new CustomUser("uur", "klp", "1234", "uur@gmail.com", "adres alani", Gender.MALE,
-                                         Set.of(new Role("ROLE_USER")));
+                Set.of(new Role("ROLE_USER")));
         user = userRepository.saveAndFlush(user);
         return user;
     }

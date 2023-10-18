@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = CategoryServiceImplTest.class)
+@SpringBootTest
 class CategoryServiceImplTest {
 
     private CategoryService instanceUnderTest;

@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {ProductServiceImpl.class})
+@SpringBootTest
         //@AutoConfigureMockMvc
 class ProductControllerTest {
     private MockMvc mockMvc;
@@ -198,7 +198,7 @@ class ProductControllerTest {
         when(productService.getProduct(eq(productId))).thenReturn(productThatBeFetched);
 
         // Run Test
-        mockMvc.perform(get("/product/" + productId)).andExpect(status().isOk())
+        mockMvc.perform(get("/products/" + productId)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(productName)).andExpect(jsonPath("$.price").value(productPrice));
     }
 
@@ -217,7 +217,7 @@ class ProductControllerTest {
         when(productService.getProduct(any(Long.class))).thenReturn(null);
 
         //Run Test
-        mockMvc.perform(get("/product/anana")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/products/anana")).andExpect(status().isBadRequest());
     }
 
     @Test

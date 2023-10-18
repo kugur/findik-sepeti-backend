@@ -59,7 +59,9 @@ public class SecurityConfig {
         http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/cart").permitAll());
         http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.POST, "/cart").permitAll());
         http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.DELETE, "/cart").permitAll());
-        http.authorizeHttpRequests(requestMatchRegistry -> requestMatchRegistry.requestMatchers("/order"));
+        http.authorizeHttpRequests(requestMatchRegistry -> requestMatchRegistry.requestMatchers("/order").hasAnyRole("ADMIN", "USER"));
+        http.authorizeHttpRequests(requestMatchRegistry -> requestMatchRegistry.requestMatchers("/orderAll").hasAnyRole("ADMIN"));
+
         http.authorizeHttpRequests(
                 requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/products/**").permitAll());
         http.authorizeHttpRequests(

@@ -1,8 +1,9 @@
 package com.kolip.findiksepeti.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kolip.findiksepeti.config.LibraryConfiguration;
+import com.kolip.findiksepeti.filters.Filter;
+import com.kolip.findiksepeti.filters.FilterConverter;
 import com.kolip.findiksepeti.pagination.PageRequestConverter;
 import com.kolip.findiksepeti.products.Product;
 import com.kolip.findiksepeti.products.ProductGenerator;
@@ -25,35 +26,36 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {PageRequestConverter.class})
+@SpringBootTest(classes = {PageRequestConverter.class, FilterConverter.class})
 @ContextConfiguration(classes = {LibraryConfiguration.class})
 class OrderControllerTest {
 
     private MockMvc mockMvc;
-//    private ObjectMapper objectMapper = new ObjectMapper();
+    //    private ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private ObjectMapper objectMapper;
 
     @MockBean
     public OrderService orderService;
+    @Autowired
     private PageRequestConverter pageRequestConverter;
+
+    @Autowired
+    private FilterConverter filterConverter;
 
 
     @BeforeEach
     public void setUp() {
         String javaVersion = System.getProperty("java.version");
         System.out.println("Java Version: " + javaVersion);
-        pageRequestConverter = new PageRequestConverter();
-        mockMvc = MockMvcBuilders.standaloneSetup(new OrderController(orderService, pageRequestConverter)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new OrderController(orderService, pageRequestConverter, filterConverter)).build();
     }
 
     @Test
@@ -95,6 +97,45 @@ class OrderControllerTest {
     }
 
     @Test
+    public void getAllOrders_withPageRequest_ShouldCallGetAllOrders() throws Exception {
+        //Initialize
+        int pageNumber = 2;
+        int pageSize = 5;
+        String pageRequest = "{\"page\": " + pageNumber + ", \"size\":" + pageSize + "}";
+        List<Order> orders = createOrders();
+        ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(PageRequest.class);
+        when(orderService.getAllOrders(pageRequestArgument.capture(), any())).thenReturn(new PageImpl<>(orders));
+
+        //Run Test
+        mockMvc.perform(get("/orderAll").param("pageInfo", pageRequest)).andExpect(status().isOk());
+
+        //Verify Result
+        verify(orderService).getAllOrders(any(), any());
+        assertEquals(pageNumber, pageRequestArgument.getValue().getPageNumber());
+        assertEquals(pageSize, pageRequestArgument.getValue().getPageSize());
+    }
+
+    @Test
+    public void getAllOrders_WithFilter_ShouldCallWithFilterObject() throws Exception {
+        //Initialize
+        String filterName = "status";
+        String filterValue = OrderStatus.ORDER_CREATED.name();
+        String filterJson = "[{\"name\":\"" + filterName + "\", \"operation\":\"EQUAL\" , \"value\":\"" + filterValue + "\"}]";
+        List<Order> orders = createOrders();
+        ArgumentCaptor<List<Filter>> filterArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        when(orderService.getAllOrders(any(), filterArgumentCaptor.capture())).thenReturn(new PageImpl<>(orders));
+
+        //Run Test
+        mockMvc.perform(get("/orderAll").param("filters", filterJson)).andExpect(status().isOk());
+
+        //Verify Result
+        verify(orderService).getAllOrders(any(), any());
+        assertEquals(1, filterArgumentCaptor.getValue().size());
+        assertEquals(filterName, filterArgumentCaptor.getValue().get(0).getName());
+        assertEquals(filterValue, filterArgumentCaptor.getValue().get(0).getValue());
+    }
+
+    @Test
     public void getOrders_withoutPageRequest_ShouldCallFirstOrderPage() throws Exception {
         //Initialize
         ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(PageRequest.class);
@@ -117,6 +158,20 @@ class OrderControllerTest {
         //Run Test
         mockMvc.perform(get("/order")).andExpect(status().isOk());
         assertTrue(Objects.requireNonNull(pageRequestArgument.getValue().getSort().getOrderFor("id")).isDescending());
+    }
+
+    @Test
+    public void updateStatus_WithStatus_ShouldCallUpdateService() throws Exception {
+        //Initialize
+        String status = OrderStatus.PLACE_ORDERED.name();
+        String orderId = "123";
+        when(orderService.updateStatus(eq(Long.parseLong(orderId)), eq(OrderStatus.PLACE_ORDERED))).thenReturn(true);
+
+        //Run Test
+        mockMvc.perform(put("/orderStatus/" + orderId).param("status", status)).andExpect(status().isOk());
+
+        //Verify
+        verify(orderService).updateStatus(eq(Long.parseLong(orderId)), eq(OrderStatus.valueOf(status)));
     }
 
     private List<Order> createOrders() {

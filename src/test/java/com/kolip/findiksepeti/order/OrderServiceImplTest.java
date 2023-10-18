@@ -2,7 +2,13 @@ package com.kolip.findiksepeti.order;
 
 import com.kolip.findiksepeti.cart.CartItem;
 import com.kolip.findiksepeti.cart.CartService;
+import com.kolip.findiksepeti.filters.Filter;
+import com.kolip.findiksepeti.filters.FilterOperations;
+import com.kolip.findiksepeti.filters.specifiation.OrderSpecification;
+import com.kolip.findiksepeti.filters.specifiation.ProductSpecification;
+import com.kolip.findiksepeti.filters.specifiation.SpecificationFactory;
 import com.kolip.findiksepeti.payment.PaymentService;
+import com.kolip.findiksepeti.products.Product;
 import com.kolip.findiksepeti.user.CustomUser;
 import com.kolip.findiksepeti.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,8 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,10 +44,13 @@ public class OrderServiceImplTest {
     CartService cartService;
     @MockBean
     UserService userService;
+    @MockBean
+    SpecificationFactory specificationFactory;
 
     @BeforeEach
     public void setup() {
-        instanceUnderTest = new OrderServiceImpl(paymentService, orderRepository, cartService, userService);
+        instanceUnderTest = new OrderServiceImpl(paymentService, orderRepository, cartService, userService,
+                specificationFactory);
     }
 
     @Test
@@ -148,7 +160,38 @@ public class OrderServiceImplTest {
         //Verify Result
         assertNotNull(orders);
         assertEquals(persistedOrder, orders);
+    }
 
+    @Test
+    public void getAllOrders_WithPageRequest_ShouldCallRepository() {
+        //Initialize
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Filter filter = new Filter("status", FilterOperations.EQUAL, OrderStatus.ORDER_CREATED.name());
+        List<Filter> filters = List.of(filter);
+        PageImpl<Order> orderResult = new PageImpl<>(new ArrayList<>());
+        when(orderRepository.findAll(any(Specification.class), any(PageRequest.class))).thenReturn(orderResult);
+        Specification<Order> dummySpec = new OrderSpecification(filter);
+        when(specificationFactory.getSpecification(eq(filters), eq(Order.class))).thenReturn(dummySpec);
+
+        //Run Test
+        instanceUnderTest.getAllOrders(pageRequest, filters);
+
+        //Verify Result
+        verify(specificationFactory).getSpecification(eq(filters), eq(Order.class));
+        verify(orderRepository).findAll(eq(dummySpec), any());
+    }
+
+    @Test
+    public void updateStatus_WithOrderIdAndStatus_ShouldUpdateOrder() {
+        //Initialize Result
+        long id = 123L;
+        OrderStatus status = OrderStatus.PLACE_ORDERED;
+
+        //Run Test
+        instanceUnderTest.updateStatus(id, status);
+
+        //Verify
+        verify(orderRepository).updateStatusById(eq(status), eq(id));
     }
 
     private void mockResponse(Order receivedOrder, boolean paymentResult) {

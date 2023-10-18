@@ -32,6 +32,10 @@ SpecificationFactory {
             case "Product":
                 result = new ProductSpecification(filter);
                 return result;
+            case "Order":
+                result = new OrderSpecification(filter);
+                return result;
+
             case "User":
                 return null;
         }

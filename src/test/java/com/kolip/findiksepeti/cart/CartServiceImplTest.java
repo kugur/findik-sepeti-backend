@@ -14,7 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(classes = CartServiceImplTest.class)
+@SpringBootTest
 class CartServiceImplTest {
 
     private CartService instanceUnderTest;
