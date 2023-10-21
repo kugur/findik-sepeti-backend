@@ -31,76 +31,59 @@ public class SecurityConfig {
 
     private CustomUserDetailsService customUserDetailsService;
     private CustomOAuth2ResultConverter oAuth2ResultConverter;
-    //    private OpenIdRoleMapper openIdRoleMapper;
+
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService,
                           CustomOAuth2ResultConverter oAuth2ResultConverter) {
         this.customUserDetailsService = customUserDetailsService;
         this.oAuth2ResultConverter = oAuth2ResultConverter;
-        //        this.openIdRoleMapper = openIdRoleMapper;
     }
-    //
-    //    @Bean
-    //    public OpenIdRoleMapper getOpenIdRoleMapper(UserService userService) {
-    //        OpenIdRoleMapper openIdRoleMapper = new OpenIdRoleMapper(userService);
-    //        return openIdRoleMapper;
-    //    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        //        http.authorizeHttpRequests(requestMatcher -> requestMatcher.anyRequest().permitAll())
-        //                .cors(Customizer.withDefaults())
-        //                .csrf(csrfConfig -> csrfConfig.ignoringRequestMatchers("/users"));
 
-        //        http.securityMatcher("/products");
         http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers("/admin").hasRole("ADMIN"))
                 .authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.PUT, "/users")
-                        .hasAnyRole("USER", "PRE_USER"));
-        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/cart").permitAll());
-        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.POST, "/cart").permitAll());
-        http.authorizeHttpRequests(requestReq -> requestReq.requestMatchers(HttpMethod.DELETE, "/cart").permitAll());
-        http.authorizeHttpRequests(requestMatchRegistry -> requestMatchRegistry.requestMatchers("/order").hasAnyRole("ADMIN", "USER"));
-        http.authorizeHttpRequests(requestMatchRegistry -> requestMatchRegistry.requestMatchers("/orderAll").hasAnyRole("ADMIN"));
-
-        http.authorizeHttpRequests(
-                requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/products/**").permitAll());
-        http.authorizeHttpRequests(
-                requestReq -> requestReq.requestMatchers(HttpMethod.POST, "/products").hasAnyRole("ADMIN"));
-        http.authorizeHttpRequests(
-                requestReq -> requestReq.requestMatchers(HttpMethod.PUT, "/products").hasAnyRole("ADMIN"));
-        http.authorizeHttpRequests(
-                requestReq -> requestReq.requestMatchers(HttpMethod.DELETE, "/products/*").hasAnyRole("ADMIN"));
-        http.authorizeHttpRequests(
-                        requestMatcherReq -> requestMatcherReq.requestMatchers(HttpMethod.POST, "/users").permitAll())
+                        .hasAnyRole("USER", "PRE_USER"))
+                .authorizeHttpRequests(requestReq -> requestReq.requestMatchers("/users").permitAll())
+                .authorizeHttpRequests(reqRegistry -> reqRegistry.requestMatchers("/cart").permitAll())
+                .authorizeHttpRequests(reqRegistry -> reqRegistry.requestMatchers("/order").hasAnyRole("ADMIN", "USER"))
+                .authorizeHttpRequests(reqRegistry -> reqRegistry.requestMatchers("/orderAll").hasAnyRole("ADMIN"))
+                .authorizeHttpRequests(
+                        reqRegistry -> reqRegistry.requestMatchers(HttpMethod.GET, "category").permitAll())
+                .authorizeHttpRequests(reqRegistry -> reqRegistry.requestMatchers("/category").hasAnyRole("ADMIN"))
+                .authorizeHttpRequests(
+                        requestReq -> requestReq.requestMatchers(HttpMethod.GET, "/products/**").permitAll())
+                .authorizeHttpRequests(requestReq -> requestReq.requestMatchers("/products").hasAnyRole("ADMIN"))
                 .authorizeHttpRequests(requestMatchReq -> requestMatchReq.requestMatchers("/v1/csrf").permitAll())
                 .authorizeHttpRequests(requestMatchReq -> requestMatchReq.requestMatchers("/images/**").permitAll())
-                .authorizeHttpRequests(authorizeReq -> authorizeReq.anyRequest().authenticated())
-                .requestCache(RequestCacheConfigurer::disable).httpBasic(Customizer.withDefaults()).sessionManagement(
-                        sessionManagementConfig -> sessionManagementConfig.sessionCreationPolicy(
-                                SessionCreationPolicy.IF_REQUIRED)).userDetailsService(customUserDetailsService)
-                //                .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.OPTIONS).permitAll())
-                //                        .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-                .cors(Customizer.withDefaults()).csrf(csrfConfig -> {
-                    csrfConfig.ignoringRequestMatchers("/users");
-                    //                    csrfConfig.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-                    csrfConfig.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
-                }).oauth2Login(oauth2Config -> oauth2Config.defaultSuccessUrl("http://localhost:3000/")
-                        //                        .failureUrl("http://localhost:3000/login")
-                        .successHandler((request, response, authentication) -> {
-                            logger.info("on success handler on oauth2Login :: " + authentication.toString());
-                            RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-                            redirectStrategy.sendRedirect(request, response, "http://localhost:3000/");
-                        }))
+                .authorizeHttpRequests(authorizeReq -> authorizeReq.anyRequest().authenticated());
 
-                //                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
-                //                                .userAuthoritiesMapper(openIdRoleMapper)))
-                .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
+        //Session, httpBasic, user-password config
+        http.requestCache(RequestCacheConfigurer::disable).httpBasic(Customizer.withDefaults()).sessionManagement(
+                sessionManagementConfig -> sessionManagementConfig.sessionCreationPolicy(
+                        SessionCreationPolicy.IF_REQUIRED)).userDetailsService(customUserDetailsService);
+
+        //Cors, Csrf config
+        http.cors(Customizer.withDefaults()).csrf(csrfConfig -> {
+            csrfConfig.ignoringRequestMatchers("/users");
+            csrfConfig.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+        });
+
+        //Oauth2 Config
+        http.oauth2Login(oauth2Config -> oauth2Config.defaultSuccessUrl("http://localhost:3000/")
+                .successHandler((request, response, authentication) -> {
+                    logger.info("on success handler on oauth2Login :: " + authentication.toString());
+                    RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+                    redirectStrategy.sendRedirect(request, response, "http://localhost:3000/");
+                })).exceptionHandling(
+                exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
                         new Http403ForbiddenEntryPoint())).logout(logoutConfigurer -> {
-                    logoutConfigurer.logoutSuccessHandler(((request, response, authentication) -> {
-                        //TODO(ugur) no need to redirect
-                        response.setStatus(HttpServletResponse.SC_OK);
-                    }));
-                });
+            logoutConfigurer.logoutSuccessHandler(((request, response, authentication) -> {
+                //TODO(ugur) no need to redirect
+                response.setStatus(HttpServletResponse.SC_OK);
+            }));
+        });
 
         SecurityFilterChain securityFilterChain = http.build();
 

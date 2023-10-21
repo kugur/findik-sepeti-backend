@@ -9,7 +9,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity(name = "custom_user")
-public class CustomUser extends AbstractEntity {
+@SequenceGenerator(name = "custom_user_seq", sequenceName = "custom_user_seq", initialValue = 10, allocationSize = 10)
+public class CustomUser {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq")
+    public Long id;
 
     private String firstName;
     private String lastName;
@@ -30,11 +34,6 @@ public class CustomUser extends AbstractEntity {
 
     public CustomUser() {
     }
-
-//    public CustomUser(String firstName, String lastName, String password, String email,
-//                      Collection<SimpleGrantedAuthority> authorities) {
-//        this(firstName, lastName, password, email, "", authorities);
-//    }
 
     public CustomUser(String firstName, String lastName, String password, String email, String address,
                       Gender gender, Set<Role> roles) {
@@ -126,9 +125,18 @@ public class CustomUser extends AbstractEntity {
         this.gender = gender;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
         return "CustomUser{" +
+                "id= " + id  +
                 "firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", password='" + password + '\'' +

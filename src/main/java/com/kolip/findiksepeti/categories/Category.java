@@ -14,7 +14,12 @@ import java.util.List;
  * Category Entity
  */
 @Entity
+@SequenceGenerator(name = "category_seq", sequenceName = "category_seq", initialValue = 10, allocationSize = 10)
 public class Category implements Cloneable, Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq")
+    public Long id;
 
     public Category() {
     }
@@ -24,9 +29,6 @@ public class Category implements Cloneable, Serializable {
         this.name = name;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
 
     private String name;
 

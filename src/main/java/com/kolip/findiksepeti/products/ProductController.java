@@ -35,13 +35,9 @@ public class ProductController {
     @GetMapping("/products")
     public Page<Product> getProducts(@RequestParam(value = "filters", defaultValue = "") String filtersJson,
                                      @RequestParam(value = "pageInfo", defaultValue = "{page=0,size=10, sort=ASC,id}")
-                                     String paginationJson) throws InterruptedException {
-        logger.info("PageRequest {}", paginationJson);
-        logger.info("Received filters {}", filtersJson);
-        Page<Product> result = productService.getProducts(filterConverter.convert(filtersJson),
+                                     String paginationJson) {
+        return productService.getProducts(filterConverter.convert(filtersJson),
                                                           pageRequestConverter.convert(paginationJson));
-        logger.info("getProducts Result :: {}", result);
-        return result;
     }
 
     @PostMapping("/products")
