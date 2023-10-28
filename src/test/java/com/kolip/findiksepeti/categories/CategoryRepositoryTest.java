@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.categories;
 
+import com.kolip.findiksepeti.AbstractTest;
 import com.kolip.findiksepeti.products.Product;
 import com.kolip.findiksepeti.products.ProductRepository;
 import jakarta.persistence.EntityManager;
@@ -9,10 +10,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
 import java.math.BigDecimal;
@@ -24,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest(showSql = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class CategoryRepositoryTest {
+public class CategoryRepositoryTest extends AbstractTest {
     @Autowired
     CategoryRepository categoryRepository;
     @Autowired
@@ -59,7 +64,7 @@ public class CategoryRepositoryTest {
         int productCount = 3;
         for (int i = 0; i < productCount; i++) {
             Product productThatHaveCategory = createProductWithOutCategory();
-            productThatHaveCategory.setCategory(new Category(1L, null));
+            productThatHaveCategory.setCategory(new Category(categoryId, null));
             productRepository.save(productThatHaveCategory);
         }
 
@@ -133,7 +138,7 @@ public class CategoryRepositoryTest {
         int productCount = 3;
         for (int i = 0; i < productCount; i++) {
             Product productThatHaveCategory = createProductWithOutCategory();
-            productThatHaveCategory.setCategory(new Category(1L, null));
+            productThatHaveCategory.setCategory(new Category(categoryId, null));
             productRepository.save(productThatHaveCategory);
         }
 

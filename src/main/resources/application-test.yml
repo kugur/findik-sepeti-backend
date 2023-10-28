@@ -1,0 +1,31 @@
+#spring:
+#  servlet:
+#    multipart:
+#      enabled: true
+#  jpa:
+#    properties:
+#      hibernate:
+#        format_sql: false
+#    show-sql: true
+#    hibernate:
+#      ddl-auto: create-drop
+#  datasource:
+#    driverClassName: org.h2.Driver
+#    url: jdbc:h2:mem:testdb
+#    username: sa
+#    password: password
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            client-id: 1074361067939-o0719c37kdb4dm51cqb90e8qsgh87n3q.apps.googleusercontent.com
+#            client-secret: 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
+#
+#file:
+#  storage:
+#    location: classpath:/image
+#
+#
+#  flyway:
+#    enabled: false

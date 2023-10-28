@@ -1,11 +1,13 @@
 package com.kolip.findiksepeti.products;
 
+import com.kolip.findiksepeti.AbstractTest;
 import com.kolip.findiksepeti.categories.Category;
 import com.kolip.findiksepeti.categories.CategoryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
 
@@ -17,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class ProductRepositoryTest {
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+public class ProductRepositoryTest extends AbstractTest {
     @Autowired
     ProductRepository productRepository;
     @Autowired
@@ -45,18 +48,20 @@ public class ProductRepositoryTest {
     public void save_ProductWithCategoryIdAndNameNull_ShouldPersistProductNotUpdateCategory() {
         //Initialize
         String productName = "raw nuts";
-        Category category = categoryRepository.save(new Category(1L, "raw"));
+        String persistedCategoryName = "raw";
+        String categoryNameSentByProduct = "random category";
+        Category category = categoryRepository.saveAndFlush(new Category(null, persistedCategoryName));
         Product product = new Product();
-        product.setCategory(new Category(category.getId(), "asdf"));
+        product.setCategory(new Category(category.getId(), categoryNameSentByProduct));
         product.setName(productName);
 
         //Run Test
-        Product persistedProduct = productRepository.save(product);
+        Product persistedProduct = productRepository.saveAndFlush(product);
         Category categoryAfterProductPersisted = categoryRepository.findById(category.getId()).get();
 
         //Verify Result
-        assertEquals(Long.valueOf(1L), persistedProduct.getCategory().getId());
-        assertEquals(category.getName(), categoryAfterProductPersisted.getName(),
+        assertEquals(Long.valueOf(category.getId()), persistedProduct.getCategory().getId());
+        assertEquals(persistedCategoryName, categoryAfterProductPersisted.getName(),
                 "Product product update, category values should not be updated.");
         assertEquals(productName, persistedProduct.getName());
     }

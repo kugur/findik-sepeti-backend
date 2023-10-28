@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.filters.specifiation;
 
+import com.kolip.findiksepeti.AbstractTest;
 import com.kolip.findiksepeti.categories.Category;
 import com.kolip.findiksepeti.categories.CategoryRepository;
 import com.kolip.findiksepeti.filters.Filter;
@@ -11,6 +12,7 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class SpecificationFactoryTest {
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class SpecificationFactoryTest extends AbstractTest {
 
     private SpecificationFactory instanceUnderTest;
 

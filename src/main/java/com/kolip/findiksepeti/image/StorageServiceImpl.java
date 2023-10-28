@@ -51,7 +51,7 @@ public class StorageServiceImpl implements StorageService {
             Files.copy(file.getInputStream(), destination.getFile().toPath().resolve(uniqueFileName),
                        StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            logger.error("Exception occurred while storing file, e: {}", e.getMessage());
+            e.printStackTrace();
             return null;
         }
 

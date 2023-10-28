@@ -2,6 +2,7 @@ package com.kolip.findiksepeti.products;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kolip.findiksepeti.AbstractTest;
 import com.kolip.findiksepeti.categories.Category;
 import com.kolip.findiksepeti.filters.FilterConverter;
 import com.kolip.findiksepeti.filters.FilterOperations;
@@ -36,8 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-        //@AutoConfigureMockMvc
-class ProductControllerTest {
+class ProductControllerTest extends AbstractTest {
     private MockMvc mockMvc;
     private ObjectMapper mapper = new ObjectMapper();
 

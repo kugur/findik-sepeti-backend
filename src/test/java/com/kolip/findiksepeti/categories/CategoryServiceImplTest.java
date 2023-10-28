@@ -1,14 +1,17 @@
 package com.kolip.findiksepeti.categories;
 
+import com.kolip.findiksepeti.AbstractTest;
 import com.kolip.findiksepeti.common.DeleteResponse;
 import com.kolip.findiksepeti.common.Errors;
 import com.kolip.findiksepeti.common.UpdateResponse;
 import com.kolip.findiksepeti.products.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,7 +24,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class CategoryServiceImplTest {
+//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("test")
+class CategoryServiceImplTest extends AbstractTest {
 
     private CategoryService instanceUnderTest;
 

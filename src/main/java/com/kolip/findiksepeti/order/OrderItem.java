@@ -2,16 +2,14 @@ package com.kolip.findiksepeti.order;
 
 import com.kolip.findiksepeti.common.AbstractEntity;
 import com.kolip.findiksepeti.products.Product;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
 @Entity
 public class OrderItem extends AbstractEntity {
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "product_id")
     private Product product;
     private int quantity;
     @Transient

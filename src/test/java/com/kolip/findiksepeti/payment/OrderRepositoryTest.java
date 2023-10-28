@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.payment;
 
+import com.kolip.findiksepeti.AbstractTest;
 import com.kolip.findiksepeti.categories.Category;
 import com.kolip.findiksepeti.categories.CategoryRepository;
 import com.kolip.findiksepeti.order.Order;
@@ -16,6 +17,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +34,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class OrderRepositoryTest {
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class OrderRepositoryTest extends AbstractTest {
     @Autowired
     public OrderRepository orderRepository;
     @Autowired

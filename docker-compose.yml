@@ -1,5 +1,30 @@
 version: '3'
 services:
+  spring-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      FINDIK_SEPETI_DATASOURCE_URL: jdbc:postgresql://db:5432/findik_sepeti?currentSchema=kolip
+    depends_on:
+      - db
+    volumes:
+      - findik-sepeti-upload:/workdir/server/uploads
+    networks:
+      - findiksepetinetwork
+  web-client:
+    build:
+      context: "C:\\Projects\\client_workspace\\react_workspace\\findik-sepeti-client"
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_SERVER_URL: localhost:8080
+        REACT_APP_IMAAGE_URL_ROOT: http://localhost:8080/images/
+    ports:
+      - "3000:80"
+    networks:
+      - findiksepetinetwork
   db:
     image: postgres
     environment:
@@ -8,3 +33,14 @@ services:
       POSTGRES_PASSWORD: postgrespw
     ports:
       - "32769:5432"
+    networks:
+      - findiksepetinetwork
+    volumes:
+      - findik-sepeti-db:/var/lib/postgresql/data
+
+networks:
+  findiksepetinetwork:
+
+volumes:
+  findik-sepeti-db:
+  findik-sepeti-upload:

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FindiksepetiApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(FindiksepetiApplication.class, args);
 	}
 

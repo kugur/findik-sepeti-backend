@@ -8,12 +8,12 @@ spring:
         format_sql: false
     show-sql: true
     hibernate:
-      ddl-auto: validate
-      dialect: org.hibernate.dialect.PostgreSQL95Dialect
+      ddl-auto: create-drop
   datasource:
-    url: ${FINDIK_SEPETI_DATASOURCE_URL}
-    username: postgres
-    password: postgrespw
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: password
   security:
     oauth2:
       client:
@@ -22,6 +22,11 @@ spring:
             client-id: 1074361067939-o0719c37kdb4dm51cqb90e8qsgh87n3q.apps.googleusercontent.com
             client-secret: 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
 
+  flyway:
+    enabled: 'false'
+
 file:
   storage:
-    location: file:///workdir/server/uploads #classpath:image
+    location: classpath:/image
+
+

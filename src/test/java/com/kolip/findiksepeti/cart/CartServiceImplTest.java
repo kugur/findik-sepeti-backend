@@ -1,5 +1,6 @@
 package com.kolip.findiksepeti.cart;
 
+import com.kolip.findiksepeti.AbstractTest;
 import com.kolip.findiksepeti.session.CartStoreServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class CartServiceImplTest {
+class CartServiceImplTest extends AbstractTest {
 
     private CartService instanceUnderTest;
 
